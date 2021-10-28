@@ -21,14 +21,63 @@
  *
 -->
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>SimpBMS</title>
+<title>ESP32-BMS Settings</title>
 <link href="style.css" rel="stylesheet" type="text/css" />
+<script src="settings.js" type="text/javascript"></script>
+
 </head>
-<body >
+<body onload="onLoad()">
 
 <div>
-	<form>
-		<label>Charge Setpoint<input name="value" type="text" />mV</label><button type='submit'>Go</button>
+	<form onsubmit="return false">
+		<h2>Battery Pack</h2>
+		<div>
+			<label>Series Cell Count<input name="seriesCells" type="number" /></label>
+		</div>
+		<div>
+			<label>Over Voltage Setpoint<input name="overVSetpoint" type="number" />mV</label>
+		</div>
+		<div>
+			<label>Under Voltage Setpoint<input name="underVSetpoint" type="number" />mV</label>
+		</div>
+		<div>
+			<label>Charge Voltage Setpoint<input name="chargeVsetpoint" type="number" />mV</label>
+		</div>
+		<div>
+			<label>Discharge Voltage Setpoint<input name="dischVsetpoint" type="number" />mV</label>
+		</div>
+		<div>
+			<label>Over Temperature Setpoint<input name="overTSetpoint" type="number" />C</label>
+		</div>
+		<div>
+			<label>Under Temperature Setpoint<input name="underTSetpoint" type="number" />C</label>
+		</div>
+		<div>
+			<label>Charge Temperature Derate Setpoint<input name="chargeTSetpoint" type="number" />C</label>
+		</div>
+		<div>
+			<label>Discharge Temperature Derate Setpoint<input name="disTSetpoint" type="number" />C</label>
+		</div>
+		<h2>Can Bus</h2>
+		<div>
+			<label>Car Can<input name="carCanIndex" type="number"  min="-1" max="3" /></label>
+		</div>
+		<div>
+			<label>Charger Can Index<input name="chargerCanIndex" type="number" min="-1" max="3" /></label>
+		</div>
+		<div>
+			<label>First Battery Can Index<input name="firstBatteryCanIndex" type="number"  min="0" max="3"/></label>
+		</div>
+		<div>
+			<label>Second Battery Can Index<input name="secondBatteryCanIndex" type="number"  min="-1" max="3" /></label>
+		</div>
+		<h2>Charging</h2>
+		<div>
+			<label>Charge Current Max<input name="chargecurrentmax" type="number"  min="1"/>A</label>
+		</div>
+		<div>
+			<button type='submit' onclick="save()">Save</button>
+		</div>
 	</form>
 </div>
 </body>

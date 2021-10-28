@@ -1,7 +1,6 @@
 #include "config.h"
 #include "BMSModuleManager.h"
 
-
 BMSModuleManager::BMSModuleManager()
 {
   for (int i = 1; i <= MAX_MODULE_ADDR; i++) {
@@ -819,7 +818,9 @@ void BMSModuleManager::printPackDetailsJson(DynamicJsonDocument &root)
       moduleNode["lowest_voltage"] =  modules[y].getLowCellV();
       moduleNode["highest_voltage"] =  modules[y].getHighCellV();
       moduleNode["average_voltage"] =  modules[y].getAverageV();
-
+      moduleNode["temperature1"] =  modules[y].getTemperature(0);
+      moduleNode["temperature2"] =  modules[y].getTemperature(1);
+      moduleNode["temperature3"] =  modules[y].getTemperature(2);
       JsonArray cellsNode = moduleNode.createNestedArray("cells");
       if (y > 1) {
         Serial.print(",");

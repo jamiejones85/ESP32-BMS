@@ -11,7 +11,7 @@ function renderModules(data) {
 
         const moduleSummary = document.createElement("div");
         moduleSummary.className = "module-summary"
-        moduleSummary.innerHTML = "<span>Total: " + m.total_voltage + "</span><span>Max: " + m.highest_voltage + "</span><span>Min: " + m.lowest_voltage + "</span><span>Avg: " + m.average_voltage + "</span>"
+        moduleSummary.innerHTML = "<span>Total: " + m.total_voltage + "v</span><span>Max: " + m.highest_voltage + "v</span><span>Min: " + m.lowest_voltage + "v</span><span>Avg: " + m.average_voltage + "v</span>"
         moduleDiv.appendChild(moduleSummary);
 
         const cellsNode = document.createElement("div");
@@ -24,6 +24,11 @@ function renderModules(data) {
             cellsNode.appendChild(cellNode)
         })
 
+        const temperatureSummary = document.createElement("div");
+        temperatureSummary.className = "temperature-summary"
+        temperatureSummary.innerHTML = "<span>Temperature 1: " + m.temperature1 + "c</span><span>Temperature 2: " + m.temperature2 + "c</span><span>Temperature 3: " + m.temperature3 + "v</span>"
+        moduleDiv.appendChild(temperatureSummary);
+        
         output.appendChild(moduleDiv)
     })
 }

@@ -54,12 +54,13 @@ void BmsCan::begin(uint32_t baud, int interfaceIndex) {
     started[interfaceIndex] = true;
   } else if (interfaceIndex == 1 && !started[interfaceIndex]) {
     can1 = new ACAN2515 (MCP2515_CS, SPI, MCP2515_INT) ;
-    ACAN2515Settings settings(16 * 1000 * 1000, baud);
-    can2->begin(settings, [] { can2->isr () ; });
+    ACAN2515Settings settings(8 * 1000 * 1000, baud);
+    can1->begin(settings, [] { can1->isr () ; });
     started[interfaceIndex] = true;
+
   } else if (interfaceIndex == 2 && !started[interfaceIndex]) {
     can2 = new ACAN2515 (MCP2515_CS, SPI, MCP2515_INT) ;
-    ACAN2515Settings settings(16 * 1000 * 1000, baud);
+    ACAN2515Settings settings(8 * 1000 * 1000, baud);
     can2->begin(settings, [] { can2->isr () ; });
     started[interfaceIndex] = true;
   } 
