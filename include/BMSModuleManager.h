@@ -1,6 +1,8 @@
 #ifndef BMS_MODULE_MANAGER_H
 #define BMS_MODULE_MANAGER_H
 
+#define CONTROLID 0x0BA;
+
 #include "config.h"
 #include "BMSModule.h"
 #include "BMSCan.h"
@@ -41,8 +43,9 @@ class BMSModuleManager
     void printPackDetails(int digits);
     void printPackDetailsJson(DynamicJsonDocument &root);
 
-int getNumModules();
+    int getNumModules();
     bool checkcomms();
+    void sendCommand(BMS_CAN_MESSAGE &msg, BmsCan &bmscan);
 
   private:
     float packVolt;                         // All modules added together

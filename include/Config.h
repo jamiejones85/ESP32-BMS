@@ -26,6 +26,7 @@ typedef struct EEPROMSettings {
   int disTSetpoint;
   //charging
   int chargecurrentmax;
+  int chargerTempDeRate;
 
 } EEPROMSettings;
 

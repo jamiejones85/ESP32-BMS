@@ -3,7 +3,8 @@
 ACAN2515* can1;
 ACAN2515* can2;
 bool started[] = {false, false, false};
-     
+SPIClass SPI2(HSPI);
+
 CANMessage BmsCan::convert(const BMS_CAN_MESSAGE &msg) {
   CANMessage ret;
 
@@ -47,20 +48,21 @@ void BmsCan::begin(uint32_t baud, int interfaceIndex) {
 
   if (interfaceIndex == 0 && !started[interfaceIndex]) {
     ACAN_ESP32_Settings settings(baud);
-    settings.mRxPin = GPIO_NUM_4;
-    settings.mTxPin = GPIO_NUM_5;
+    settings.mRxPin = GPIO_NUM_16;
+    settings.mTxPin = GPIO_NUM_17;
 
     ACAN_ESP32::can.begin(settings);
     started[interfaceIndex] = true;
   } else if (interfaceIndex == 1 && !started[interfaceIndex]) {
     can1 = new ACAN2515 (MCP2515_CS, SPI, MCP2515_INT) ;
-    ACAN2515Settings settings(8 * 1000 * 1000, baud);
+    ACAN2515Settings settings(16 * 1000 * 1000, baud);
     can1->begin(settings, [] { can1->isr () ; });
     started[interfaceIndex] = true;
 
   } else if (interfaceIndex == 2 && !started[interfaceIndex]) {
-    can2 = new ACAN2515 (MCP2515_CS, SPI, MCP2515_INT) ;
-    ACAN2515Settings settings(8 * 1000 * 1000, baud);
+    SPI2.begin();
+    can2 = new ACAN2515 (MCP2515_CS_2, SPI2, MCP2515_INT_2) ;
+    ACAN2515Settings settings(16 * 1000 * 1000, baud);
     can2->begin(settings, [] { can2->isr () ; });
     started[interfaceIndex] = true;
   } 

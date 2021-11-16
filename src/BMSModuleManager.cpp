@@ -798,6 +798,33 @@ void BMSModuleManager::printPackSummary()
   }
 }
 
+void BMSModuleManager::sendCommand(BMS_CAN_MESSAGE &msg, BmsCan &bmscan) {
+  msg.id  = CONTROLID;
+  msg.len = 8;
+  msg.buf[0] = 0x00;
+  msg.buf[1] = 0x00;
+  msg.buf[2] = 0x00;
+  msg.buf[3] = 0x00;
+  msg.buf[4] = 0x00;
+  msg.buf[5] = 0x00;
+  msg.buf[6] = 0x00;
+  msg.buf[7] = 0x00;
+  bmscan.write(msg, 0);
+
+  delay(1);
+  msg.id  = CONTROLID;
+  msg.len = 8;
+  msg.buf[0] = 0x45;
+  msg.buf[1] = 0x01;
+  msg.buf[2] = 0x28;
+  msg.buf[3] = 0x00;
+  msg.buf[4] = 0x00;
+  msg.buf[5] = 0x00;
+  msg.buf[6] = 0x00;
+  msg.buf[7] = 0x30;
+  bmscan.write(msg, 0);
+}
+
 void BMSModuleManager::printPackDetailsJson(DynamicJsonDocument &root)
 {
   uint8_t faults;

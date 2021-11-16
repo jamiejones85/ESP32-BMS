@@ -4,11 +4,17 @@
 #include <ACAN_ESP32.h>
 #include <ACAN2515.h>
 
-static const byte MCP2515_SCK = SCK ; // SCK input of MCP2515
-static const byte MCP2515_SI  = MOSI ; // SI input of MCP2515
-static const byte MCP2515_SO  = MISO ; // SO output of MCP2515
-static const byte MCP2515_CS  = SS ; // CS input of MCP2515
-static const byte MCP2515_INT = 4 ; // INT output of MCP2515
+static const byte MCP2515_SCK = GPIO_NUM_18 ; // SCK input of MCP2515
+static const byte MCP2515_SI  = GPIO_NUM_23 ; // SI input of MCP2515
+static const byte MCP2515_SO  = GPIO_NUM_19 ; // SO output of MCP2515
+static const byte MCP2515_CS  = GPIO_NUM_5 ; // CS input of MCP2515
+static const byte MCP2515_INT = GPIO_NUM_2 ; // INT output of MCP2515
+
+static const byte MCP2515_SCK_2 = GPIO_NUM_14 ; // SCK input of MCP2515
+static const byte MCP2515_SI_2  = GPIO_NUM_13 ; // SI input of MCP2515
+static const byte MCP2515_SO_2  = GPIO_NUM_12 ; // SO output of MCP2515
+static const byte MCP2515_CS_2  = GPIO_NUM_15 ; // CS input of MCP2515
+static const byte MCP2515_INT_2 = GPIO_NUM_33 ; // INT output of MCP2515
 
 typedef struct BMS_CAN_MESSAGE {
     uint32_t id;

@@ -39,6 +39,7 @@ EEPROMSettings Config::loadDefaults() {
     settings.disTSetpoint = 40;
     //charging
     settings.chargecurrentmax = 6; //6 amps
+    settings.chargerTempDeRate = 70;
     return settings;
 }
 
