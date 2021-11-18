@@ -19,11 +19,14 @@ typedef struct EEPROMSettings {
   int underVSetpoint;
   int chargeVsetpoint;
   int dischVsetpoint;
+  int cellGapAlarm; //milivolt difference in min and max to raise alarm
+  int warnOffset; //How close to min and max voltages to warn
   //temperatures
   int overTSetpoint;
   int underTSetpoint;
   int chargeTSetpoint;
   int disTSetpoint;
+  int warnTempOffset; //How close to min and max temperatures to warn
   //charging
   int chargecurrentmax;
   int chargerTempDeRate;

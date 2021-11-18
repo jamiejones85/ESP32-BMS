@@ -16,9 +16,13 @@ class Bms {
     void execute();
     void ms500Task(const EEPROMSettings& settings);
     void canRead(int canInterfaceOffset, int idOffset);
+    BMSModuleManager& getBMSModuleManager();
   private:
-    void broadcastStatus(const EEPROMSettings& settings);
     BMSModuleManager bmsModuleManager;
+    unsigned char alarm[4];
+    unsigned char warning[4];
+    void broadcastStatus(const EEPROMSettings& settings);
+    void updateAlarms(const EEPROMSettings& settings);
 
 
 };

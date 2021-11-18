@@ -73,7 +73,7 @@ int BmsCan::write(const BMS_CAN_MESSAGE &msg, int interfaceIndex) {
   CANMessage toSend = convert(msg);
 
   if (interfaceIndex == 0) {
-    ACAN_ESP32::can.tryToSend(toSend);
+    // ACAN_ESP32::can.tryToSend(toSend);
   } else if (interfaceIndex == 1) {
     can1->tryToSend(toSend);
   } else if (interfaceIndex == 2 && can2 != NULL) {

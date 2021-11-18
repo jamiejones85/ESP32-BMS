@@ -17,8 +17,8 @@
 
 
 // Replace with your network credentials
-const char* ssid = "--";
-const char* password = "--";
+const char* ssid = "VodafoneConnect59090278_24";
+const char* password = "2umz394zbf9af7s";
 
 int moduleidstart = 0x1CC;
 int cellspresent = 0;
@@ -26,7 +26,6 @@ int cellspresent = 0;
 byte status = 0x0;
 
 Bms bms;
-BMSModuleManager bmsModuleManager;
 BMSWebServer bmsWebServer;
 
 EEPROMSettings settings;
@@ -66,7 +65,7 @@ void setup(){
   // Print ESP32 Local IP Address
   Serial.println(WiFi.localIP());
 
-  bmsWebServer.setup(settings, config, bmsModuleManager);
+  bmsWebServer.setup(settings, config, bms.getBMSModuleManager());
   bms.setup(settings);
 
   ts.addTask(ms500Task);

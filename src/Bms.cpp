@@ -18,25 +18,29 @@ void Bms::execute() {
 }
 
 void Bms::ms500Task(const EEPROMSettings& settings) {
+    bmsModuleManager.sendCommand(msg, bmscan);
+    bmsModuleManager.getAllVoltTemp();
     Bms::broadcastStatus(settings);
+    Bms::updateAlarms(settings);
 }
 
 void Bms::canRead(int canInterfaceOffset, int idOffset)
 {
-  // bmscan.read(inMsg, canInterfaceOffset);
+  
+  if (bmscan.read(inMsg, canInterfaceOffset)) {
+    //TODO::this can probably be better
+    if (inMsg.id < 0x300)//do VW BMS magic if ids are ones identified to be modules
+    {
+        inMsg.id = inMsg.id + idOffset;
+        bmsModuleManager.decodecan(inMsg, 0); //do VW BMS if ids are ones identified to be modules
+    }
 
-  // //TODO::this can probably be better
-  // if (inMsg.id < 0x300)//do VW BMS magic if ids are ones identified to be modules
-  // {
-  //   inMsg.id = inMsg.id + idOffset;
-  //   bmsModuleManager.decodecan(inMsg, 0); //do VW BMS if ids are ones identified to be modules
-  // }
-
-  // if ((inMsg.id & 0x1FFFFFFF) < 0x1A5554F0 && (inMsg.id & 0x1FFFFFFF) > 0x1A555400)   // Determine if ID is Temperature CAN-ID
-  // {
-  //   inMsg.id = inMsg.id + idOffset/4; // the temps only require offsetting id by 8 (1/4 of 32) i.e. 1 can id per slave. 
-  //   bmsModuleManager.decodetemp(inMsg, 0);
-  // }
+    if ((inMsg.id & 0x1FFFFFFF) < 0x1A5554F0 && (inMsg.id & 0x1FFFFFFF) > 0x1A555400)   // Determine if ID is Temperature CAN-ID
+    {
+        inMsg.id = inMsg.id + idOffset/4; // the temps only require offsetting id by 8 (1/4 of 32) i.e. 1 can id per slave. 
+        bmsModuleManager.decodetemp(inMsg, 0);
+    }
+  }
   
 }
 
@@ -91,17 +95,17 @@ void Bms::broadcastStatus(const EEPROMSettings& settings) {
   bmscan.write(msg, 2);
 
   delay(2);
-  // msg.id  = 0x35A;
-  // msg.len = 8;
-  // msg.buf[0] = alarm[0];//High temp  Low Voltage | High Voltage
-  // msg.buf[1] = alarm[1]; // High Discharge Current | Low Temperature
-  // msg.buf[2] = alarm[2]; //Internal Failure | High Charge current
-  // msg.buf[3] = alarm[3];// Cell Imbalance
-  // msg.buf[4] = warning[0];//High temp  Low Voltage | High Voltage
-  // msg.buf[5] = warning[1];// High Discharge Current | Low Temperature
-  // msg.buf[6] = warning[2];//Internal Failure | High Charge current
-  // msg.buf[7] = warning[3];// Cell Imbalance
-  // bmscan.write(msg, settings.carCanIndex);
+  msg.id  = 0x35A;
+  msg.len = 8;
+  msg.buf[0] = Bms::alarm[0];//High temp  Low Voltage | High Voltage
+  msg.buf[1] = Bms::alarm[1]; // High Discharge Current | Low Temperature
+  msg.buf[2] = Bms::alarm[2]; //Internal Failure | High Charge current
+  msg.buf[3] = Bms::alarm[3];// Cell Imbalance
+  msg.buf[4] = Bms::warning[0];//High temp  Low Voltage | High Voltage
+  msg.buf[5] = Bms::warning[1];// High Discharge Current | Low Temperature
+  msg.buf[6] = Bms::warning[2];//Internal Failure | High Charge current
+  msg.buf[7] = Bms::warning[3];// Cell Imbalance
+  bmscan.write(msg, settings.carCanIndex);
 
 
   delay(2);
@@ -136,4 +140,56 @@ void Bms::broadcastStatus(const EEPROMSettings& settings) {
   // msg.buf[6] = 0x00;
   // msg.buf[7] = 0x00;
   // bmscan.write(msg, settings.carCanIndex);
+}
+
+BMSModuleManager& Bms::getBMSModuleManager() {
+    return bmsModuleManager;
+}
+
+void Bms::updateAlarms(const EEPROMSettings& settings) {
+  Bms::alarm[0] = 0x00;
+  if (settings.overVSetpoint < bmsModuleManager.getHighCellVolt())
+  {
+    Bms::alarm[0] = 0x04;
+  }
+  if (bmsModuleManager.getLowCellVolt() < settings.underVSetpoint)
+  {
+    Bms::alarm[0] |= 0x10;
+  }
+  if (bmsModuleManager.getHighTemperature() > settings.overTSetpoint)
+  {
+    Bms::alarm[0] |= 0x40;
+  }
+  Bms::alarm[1] = 0;
+  if (bmsModuleManager.getLowTemperature() < settings.underTSetpoint)
+  {
+    Bms::alarm[1] = 0x01;
+  }
+  Bms::alarm[3] = 0;
+  if ((bmsModuleManager.getHighCellVolt() - bmsModuleManager.getLowCellVolt()) > settings.cellGapAlarm)
+  {
+    Bms::alarm[3] = 0x01;
+  }
+
+  ///warnings///
+  Bms::warning[0] = 0;
+
+  if (bmsModuleManager.getHighCellVolt() > (settings.overVSetpoint - settings.warnOffset))
+  {
+    Bms::warning[0] = 0x04;
+  }
+  if (bmsModuleManager.getLowCellVolt() < (settings.underVSetpoint + settings.warnOffset))
+  {
+    Bms::warning[0] |= 0x10;
+  }
+
+  if (bmsModuleManager.getHighTemperature() > (settings.overTSetpoint - settings.warnTempOffset))
+  {
+    Bms::warning[0] |= 0x40;
+  }
+  Bms::warning[1] = 0;
+  if (bmsModuleManager.getLowTemperature() < (settings.underTSetpoint + settings.warnTempOffset))
+  {
+    Bms::warning[1] = 0x01;
+  }
 }
