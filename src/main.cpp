@@ -11,19 +11,14 @@
 #include <SPI.h>
 #include <esp_task_wdt.h>
 #include <EEPROM.h>
+#include <Ticker.h>
+#include <Update.h>
 
 #define WDT_TIMEOUT 3
 #define EEPROM_SIZE 512
 
-
-// Replace with your network credentials
-const char* ssid = "VodafoneConnect59090278_24";
-const char* password = "2umz394zbf9af7s";
-
 int moduleidstart = 0x1CC;
 int cellspresent = 0;
-
-byte status = 0x0;
 
 Bms bms;
 BMSWebServer bmsWebServer;
@@ -34,10 +29,20 @@ Config config;
 // Create AsyncWebServer object on port 80
 Scheduler ts;
 
+void staCheck();
 void ms20000Callback();
 void ms500Callback();
 Task ms500Task(500, TASK_FOREVER, &ms500Callback);
 Task ms20000Task(20000, TASK_FOREVER, &ms20000Callback);
+Ticker sta_tick(staCheck, 5000, 0, MICROS);
+
+void staCheck(){
+  sta_tick.stop();
+
+  if(!(uint32_t)WiFi.localIP()){
+    WiFi.mode(WIFI_AP); //disable station mode
+  }
+}
 
 void setup(){
   EEPROM.begin(EEPROM_SIZE);
@@ -50,22 +55,46 @@ void setup(){
     return;
   }
 
+  Serial.println(SPIFFS.exists("/firmware.bin"));
+
+  File file = SPIFFS.open("/firmware.bin");
+  
+  if(SPIFFS.exists("/firmware.bin") && file){
+      Serial.println("Updating....");
+      size_t fileSize = file.size();
+ 
+      if(!Update.begin(fileSize)){
+        Serial.println("Cannot do the update");
+      } else {
+        Update.writeStream(file);
+
+        if(Update.end()){
+          Serial.println("Successful update");  
+        }else {
+          Serial.println("Error Occurred: " + String(Update.getError()));
+        }
+      }
+
+     
+      file.close();
+      Serial.println("Deleting firmware.bin");
+      SPIFFS.remove("/firmware.bin");
+      Serial.println("Reset in 4 seconds...");
+      delay(4000);
+      ESP.restart();
+  }
+
+
   //AP and Station Mode
   WiFi.mode(WIFI_AP_STA);
   WiFi.hostname("ESP32-BMS");
   // Connect to Wi-Fi
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Connecting to WiFi..");
-  }
+  WiFi.begin();
+  sta_tick.start();
 
   settings = config.load();
 
-  // Print ESP32 Local IP Address
-  Serial.println(WiFi.localIP());
-
-  bmsWebServer.setup(settings, config, bms.getBMSModuleManager());
+  bmsWebServer.setup(settings, config, bms);
   bms.setup(settings);
 
   ts.addTask(ms500Task);
@@ -76,7 +105,7 @@ void setup(){
 
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
-
+  Serial.println("Setup Done");
 }
 
 //Execute every 20 seconds
@@ -90,6 +119,7 @@ void ms500Callback() {
 }
 
 void loop(){
+  sta_tick.update();
   ts.execute();
   bms.execute();
   esp_task_wdt_reset();

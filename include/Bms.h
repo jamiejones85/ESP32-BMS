@@ -2,6 +2,7 @@
 #define BMS_H
 #include <Arduino.h>
 #include "BMSModuleManager.h"
+#include "OutlanderCharger.h"
 
 #define Boot 0
 #define Ready 1
@@ -12,17 +13,24 @@
 
 class Bms {
   public:
+    Bms();
     void setup(const EEPROMSettings& settings);
     void execute();
     void ms500Task(const EEPROMSettings& settings);
     void canRead(int canInterfaceOffset, int idOffset);
     BMSModuleManager& getBMSModuleManager();
+    OutlanderCharger& getOutlanderCharger();
+    byte getStatus();
+
   private:
+    byte status;
     BMSModuleManager bmsModuleManager;
+    OutlanderCharger outlanderCharger;
     unsigned char alarm[4];
     unsigned char warning[4];
     void broadcastStatus(const EEPROMSettings& settings);
     void updateAlarms(const EEPROMSettings& settings);
+    void updateStatus();
 
 
 };

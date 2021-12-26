@@ -4,6 +4,7 @@
 EEPROMSettings Config::load() {
   EEPROMSettings settings;
   EEPROM.get(0, settings);
+  Serial.print("EEPROM VERSION: ");
   Serial.println(settings.version);
   if (settings.version != EEPROM_VERSION)
   {
@@ -15,9 +16,10 @@ EEPROMSettings Config::load() {
 }
 
 void Config::save(const EEPROMSettings& settings) {
-    Serial.println(settings.version);
-    EEPROM.put(0, settings);
-    EEPROM.commit();
+  Serial.print("SAVING EEPROM VERSION: ");
+  Serial.println(settings.version);
+  EEPROM.put(0, settings);
+  EEPROM.commit();
 }
 
 EEPROMSettings Config::loadDefaults() {
@@ -32,14 +34,20 @@ EEPROMSettings Config::loadDefaults() {
     settings.underVSetpoint = 3000;
     settings.chargeVsetpoint = 4100;
     settings.dischVsetpoint = 3200;
+    settings.cellGapAlarm = 90;
+    settings.warnOffset = 100;
     //temperatures
     settings.overTSetpoint = 65;
     settings.underTSetpoint = -10;
     settings.chargeTSetpoint = 0; //derate charging at this temperature
     settings.disTSetpoint = 40;
+    settings.warnTempOffset = 10;
     //charging
     settings.chargecurrentmax = 6; //6 amps
     settings.chargerTempDeRate = 70;
+
+    settings.parallelStrings = 1;
+
     return settings;
 }
 

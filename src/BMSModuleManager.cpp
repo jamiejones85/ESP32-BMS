@@ -3,6 +3,7 @@
 
 BMSModuleManager::BMSModuleManager()
 {
+  Serial.println("BMSModuleManager instatiated");
   for (int i = 1; i <= MAX_MODULE_ADDR; i++) {
     modules[i].setExists(false);
     modules[i].setAddress(i);
@@ -849,9 +850,6 @@ void BMSModuleManager::printPackDetailsJson(DynamicJsonDocument &root)
       moduleNode["temperature2"] =  modules[y].getTemperature(1);
       moduleNode["temperature3"] =  modules[y].getTemperature(2);
       JsonArray cellsNode = moduleNode.createNestedArray("cells");
-      if (y > 1) {
-        Serial.print(",");
-      }
       faults = modules[y].getFaults();
       alerts = modules[y].getAlerts();
       COV = modules[y].getCOVCells();

@@ -8,7 +8,6 @@ class OutlanderCharger {
   public:
     void processMessage(BMS_CAN_MESSAGE &inMsg);
     void doCharge(EEPROMSettings &settings);
-  private:
     int reported_voltage = 0;
     int reported_dc_current = 0;
     int reported_temp1 = 0;
@@ -16,6 +15,7 @@ class OutlanderCharger {
     int request_current = 0;
     byte reported_status = 0;
     byte evse_duty = 0;
+  private:
     int timeout = 0;
     int calculateCurrent(EEPROMSettings &settings);
 };

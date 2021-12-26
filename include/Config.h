@@ -30,6 +30,7 @@ typedef struct EEPROMSettings {
   //charging
   int chargecurrentmax;
   int chargerTempDeRate;
+  int parallelStrings;
 
 } EEPROMSettings;
 

@@ -1,20 +1,19 @@
 var chartSoc, chartTemp, chartCurrent, chartChargerCurrent, chartChargerTemp, chartChargerVolts
 
-var updateGauge = function(data) {
-    const parts = data.split("=");
+var updateGauge = function(key, value) {
 
-    if (parts[0] == 'soc.val') {
-        updateSoc(parts[1])
-    } else if (parts[0] == 'temp.val') {
-        updateTemp(parts[1])
-    } else if (parts[0] == 'current.val') {
-        updateCurrent(parts[1])
-    } else if (parts[0] == 'chargervolts.val') {
-        updateChargerVolts(parts[1])
-    } else if (parts[0] == 'chargercurrent.val') {
-        updateChargerAmps( parts[1]/ 10)
-    } else if (parts[0] == 'chargertemp.val') {
-        updateChargerTemp(parts[1])
+    if (key == 'soc.val') {
+        updateSoc(value)
+    } else if (key == 'avgTemp') {
+        updateTemp(value)
+    } else if (key == 'current.val') {
+        updateCurrent(value)
+    } else if (key == 'chargervolts.val') {
+        updateChargerVolts(value)
+    } else if (key == 'chargercurrent.val') {
+        updateChargerAmps( value/ 10)
+    } else if (key == 'chargertemp.val') {
+        updateChargerTemp(value)
     }
 
 };

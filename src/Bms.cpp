@@ -1,13 +1,25 @@
 #include "Bms.h"
 #include "BmsCan.h"
 #include "BMSModuleManager.h"
+#include "OutlanderCharger.h"
+#include "IO.h"
 
 BmsCan bmscan;
 BMS_CAN_MESSAGE msg;
 BMS_CAN_MESSAGE inMsg;
+OutlanderCharger charger;
+IO io;
+
+Bms::Bms() {
+  Serial.println("BMS instansiated");
+  status = Boot;
+}
 
 void Bms::setup(const EEPROMSettings& settings) {
+  io.setup();
   SPI.begin();
+  //only supports 1 pack at the moment
+  bmsModuleManager.setPstrings(settings.parallelStrings);
   bmscan.begin(500000, 0);
   bmscan.begin(500000, 1);
   bmscan.begin(500000, 2);
@@ -20,8 +32,32 @@ void Bms::execute() {
 void Bms::ms500Task(const EEPROMSettings& settings) {
     bmsModuleManager.sendCommand(msg, bmscan);
     bmsModuleManager.getAllVoltTemp();
-    Bms::broadcastStatus(settings);
     Bms::updateAlarms(settings);
+    Bms::updateStatus();
+
+    Bms::broadcastStatus(settings);
+}
+
+//Boot goes to ready
+//Ready can go to Precharge
+//Precharge can go to Charge or Drive
+void Bms::updateStatus() {
+  switch (status) {
+    case Boot: 
+      status = Ready;
+      break;
+    case Ready:
+      //check for AC input and go to charge or precharge
+      break;
+    case Precharge:
+      break;
+    case Drive:
+      break;
+    case Charge:
+      break;
+    case Error:
+      break;
+  }
 }
 
 void Bms::canRead(int canInterfaceOffset, int idOffset)
@@ -40,6 +76,7 @@ void Bms::canRead(int canInterfaceOffset, int idOffset)
         inMsg.id = inMsg.id + idOffset/4; // the temps only require offsetting id by 8 (1/4 of 32) i.e. 1 can id per slave. 
         bmsModuleManager.decodetemp(inMsg, 0);
     }
+    charger.processMessage(inMsg);
   }
   
 }
@@ -92,7 +129,6 @@ void Bms::broadcastStatus(const EEPROMSettings& settings) {
   msg.buf[6] = lowByte(uint16_t(bmsModuleManager.getAvgCellVolt() * 1000));
   msg.buf[7] = highByte(uint16_t(bmsModuleManager.getAvgCellVolt() * 1000));
   bmscan.write(msg, settings.carCanIndex);
-  bmscan.write(msg, 2);
 
   delay(2);
   msg.id  = 0x35A;
@@ -120,7 +156,6 @@ void Bms::broadcastStatus(const EEPROMSettings& settings) {
   msg.buf[6] = lowByte(uint16_t(bmsModuleManager.getHighTemperature() + 273.15));
   msg.buf[7] = highByte(uint16_t(bmsModuleManager.getHighTemperature() + 273.15));
   bmscan.write(msg, settings.carCanIndex);
-  bmscan.write(msg, 2);
 
   // delay(2);
   // msg.id  = 0x379; //Installed capacity
@@ -142,8 +177,16 @@ void Bms::broadcastStatus(const EEPROMSettings& settings) {
   // bmscan.write(msg, settings.carCanIndex);
 }
 
+OutlanderCharger& Bms::getOutlanderCharger() {
+  return outlanderCharger;
+}
+
 BMSModuleManager& Bms::getBMSModuleManager() {
     return bmsModuleManager;
+}
+
+byte Bms::getStatus() {
+  return status;
 }
 
 void Bms::updateAlarms(const EEPROMSettings& settings) {

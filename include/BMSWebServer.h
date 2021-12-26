@@ -4,13 +4,13 @@
 #include "AsyncJson.h"
 #include "ArduinoJson.h"
 #include "Config.h"
-#include "BMSModuleManager.h"
+#include "Bms.h"
 
 class BMSWebServer
 {
   public:
-    void setup(EEPROMSettings &settings, Config &config, BMSModuleManager &bmsModuleManager);
-    
+    void setup(EEPROMSettings &settings, Config &config, Bms &bms);
+  private:
 
 };
 #endif
