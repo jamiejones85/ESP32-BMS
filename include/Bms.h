@@ -3,6 +3,9 @@
 #include <Arduino.h>
 #include "BMSModuleManager.h"
 #include "OutlanderCharger.h"
+#include "Config.h"
+#include "IO.h"
+
 
 #define Boot 0
 #define Ready 1
@@ -20,18 +23,23 @@ class Bms {
     void canRead(int canInterfaceOffset, int idOffset);
     BMSModuleManager& getBMSModuleManager();
     OutlanderCharger& getOutlanderCharger();
+    IO& getIO();
     byte getStatus();
+    bool contactorsClosed();
 
   private:
+    EEPROMSettings settings;
     byte status;
     BMSModuleManager bmsModuleManager;
     OutlanderCharger outlanderCharger;
+    IO io;
     unsigned char alarm[4];
     unsigned char warning[4];
+    unsigned long inverterLastRec;
+    byte inverterStatus;
     void broadcastStatus(const EEPROMSettings& settings);
     void updateAlarms(const EEPROMSettings& settings);
     void updateStatus();
-
 
 };
 

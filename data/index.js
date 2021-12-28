@@ -40,14 +40,13 @@ function updateText(key, value) {
 		setValue('version', value);
 	} else if (key == 'status') {
 		setValue('mode', value);
-		if (value == '"Charge"') {
+		// if (value == '"Charge"') {
 			show('outlander-charger')
 			show('chargeContainer');
-		} else {
-			hide('outlander-charger')
-			hide('chargeContainer');
-
-		}
+		// } else {
+		// 	hide('outlander-charger')
+		// 	hide('chargeContainer');
+		// }
 	} else if (key == 'inverterstatus.val') {
 		if (parts[1] == 1) {
 			setValue('inverterStatus', "Run");
@@ -65,15 +64,22 @@ function updateText(key, value) {
 		setValue('celldelta', value);
 	} else if (key == 'ac.val') {
 		setValue('acPresent', value);
-	}  else if (key == 'requestedchargecurrent.val') {
+	}  else if (key == 'chargerRequestedCurrent') {
 		setValue('requestedChargeCurrent', value / 10);
-	} else if (key == 'chargerstatus.val') {
-		setValue('chargerStatus', value)
+	} else if (key == 'chargerStatus') {
+		const intVal = parseInt(value)
+		if (intVal == 0) {
+			setValue('chargerStatus', "Not Charging")
+		} else if (intVal == 0x04) {
+			setValue('chargerStatus', "Wait for Mains")
+		} else if (intVal == 0x08) {
+			setValue('chargerStatus', "Ready/Charging")
+		}
 	} else if (key == 'chargevsetpoint.val') {
 		setValue('chargeSetpoint', value)
 	} else if (key == 'chargecurrentmax.val') {
 		setValue('chargeMaxCurrent', value)
-	} else if (key == 'evse_duty.val') {
+	} else if (key == 'evseDuty') {
 		setValue('evseDuty', value);
 	} else if (key == 'socOverride.val') {
 		setValue('socOverride', value);

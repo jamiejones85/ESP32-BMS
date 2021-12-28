@@ -8,11 +8,11 @@ var updateGauge = function(key, value) {
         updateTemp(value)
     } else if (key == 'current.val') {
         updateCurrent(value)
-    } else if (key == 'chargervolts.val') {
+    } else if (key == 'chargerVoltage') {
         updateChargerVolts(value)
-    } else if (key == 'chargercurrent.val') {
+    } else if (key == 'chargerCurrent') {
         updateChargerAmps( value/ 10)
-    } else if (key == 'chargertemp.val') {
+    } else if (key == 'chargerTemp1') {
         updateChargerTemp(value)
     }
 
@@ -41,14 +41,14 @@ var updateChargerAmps = function(newVal) {
     const element = document.getElementById('outlander-charger');
     if (chartChargerCurrent) {
         point = chartChargerCurrent.series[0].points[0];
-        point.update(parseInt(newVal));
+        point.update(parseFloat(newVal));
     }
 }
 
 var updateCurrent = function(newVal) {
     if (chartCurrent) {
         point = chartCurrent.series[0].points[0];
-        point.update(parseInt(newVal)/ 10);
+        point.update(parseFloat(newVal)/ 10);
     }
 }
   

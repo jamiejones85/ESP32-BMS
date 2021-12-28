@@ -2,13 +2,10 @@
 #include "BmsCan.h"
 #include "BMSModuleManager.h"
 #include "OutlanderCharger.h"
-#include "IO.h"
 
 BmsCan bmscan;
 BMS_CAN_MESSAGE msg;
 BMS_CAN_MESSAGE inMsg;
-OutlanderCharger charger;
-IO io;
 
 Bms::Bms() {
   Serial.println("BMS instansiated");
@@ -18,6 +15,8 @@ Bms::Bms() {
 void Bms::setup(const EEPROMSettings& settings) {
   io.setup();
   SPI.begin();
+  this->settings = settings;
+
   //only supports 1 pack at the moment
   bmsModuleManager.setPstrings(settings.parallelStrings);
   bmscan.begin(500000, 0);
@@ -27,6 +26,10 @@ void Bms::setup(const EEPROMSettings& settings) {
 
 void Bms::execute() {
     Bms::canRead(0, 0);
+
+    if(inverterLastRec + 200 < millis()) {
+      inverterStatus = 0;
+    }
 }
 
 void Bms::ms500Task(const EEPROMSettings& settings) {
@@ -48,8 +51,16 @@ void Bms::updateStatus() {
       break;
     case Ready:
       //check for AC input and go to charge or precharge
+      if (io.isChargeEnabled()) {
+        status = Precharge;
+      }
       break;
     case Precharge:
+      if (io.isChargeEnabled() && contactorsClosed()) {
+        status = Charge;
+      } else if (io.isDriveEnabled() && contactorsClosed()) {
+        status = Drive;
+      }
       break;
     case Drive:
       break;
@@ -76,7 +87,15 @@ void Bms::canRead(int canInterfaceOffset, int idOffset)
         inMsg.id = inMsg.id + idOffset/4; // the temps only require offsetting id by 8 (1/4 of 32) i.e. 1 can id per slave. 
         bmsModuleManager.decodetemp(inMsg, 0);
     }
-    charger.processMessage(inMsg);
+
+    if (settings.carCanIndex == canInterfaceOffset) {
+      outlanderCharger.processMessage(inMsg);
+      //from inverter
+      if (inMsg.id == 0x02) {
+        inverterLastRec = millis();
+        inverterStatus = inMsg.buf[0];
+      }
+    }
   }
   
 }
@@ -96,8 +115,8 @@ void Bms::broadcastStatus(const EEPROMSettings& settings) {
 
   // bmscan.write(msg, settings.carCanIndex);
 
-  // msg.id  = 0x355;
-  // msg.len = 8;
+  msg.id  = 0x355;
+  msg.len = 8;
   // if (SOCoverride != -1) {
   //   msg.buf[0] = lowByte(SOCoverride);
   //   msg.buf[1] = highByte(SOCoverride);
@@ -114,9 +133,9 @@ void Bms::broadcastStatus(const EEPROMSettings& settings) {
   //   msg.buf[5] = highByte(SOC * 10);
   // }
 
-  // msg.buf[6] = lowByte(bmsstatus);
-  // msg.buf[7] = highByte(bmsstatus);
-  // bmscan.write(msg, settings.carCanIndex);
+  msg.buf[6] = lowByte(status);
+  msg.buf[7] = highByte(status);
+  bmscan.write(msg, settings.carCanIndex);
 
   msg.id  = 0x356;
   msg.len = 8;
@@ -157,27 +176,11 @@ void Bms::broadcastStatus(const EEPROMSettings& settings) {
   msg.buf[7] = highByte(uint16_t(bmsModuleManager.getHighTemperature() + 273.15));
   bmscan.write(msg, settings.carCanIndex);
 
-  // delay(2);
-  // msg.id  = 0x379; //Installed capacity
-  // msg.len = 2;
-  // msg.buf[0] = lowByte(uint16_t(settings.Pstrings * settings.CAP));
-  // msg.buf[1] = highByte(uint16_t(settings.Pstrings * settings.CAP));
-
-  // delay(2);
-  // msg.id  = 0x372;
-  // msg.len = 8;
-  // msg.buf[0] = lowByte(bms.getNumModules());
-  // msg.buf[1] = highByte(bms.getNumModules());
-  // msg.buf[2] = 0x00;
-  // msg.buf[3] = 0x00;
-  // msg.buf[4] = 0x00;
-  // msg.buf[5] = 0x00;
-  // msg.buf[6] = 0x00;
-  // msg.buf[7] = 0x00;
-  // bmscan.write(msg, settings.carCanIndex);
 }
 
 OutlanderCharger& Bms::getOutlanderCharger() {
+  Serial.print("Get: ");
+  Serial.println(outlanderCharger.evse_duty, HEX);
   return outlanderCharger;
 }
 
@@ -185,8 +188,20 @@ BMSModuleManager& Bms::getBMSModuleManager() {
     return bmsModuleManager;
 }
 
+IO& Bms::getIO() {
+  return io;
+}
+
 byte Bms::getStatus() {
   return status;
+}
+
+bool Bms::contactorsClosed() {
+  // if inverter in RUN mode
+  if (inverterStatus == 0x01) {
+    return true;
+  }
+  return false;
 }
 
 void Bms::updateAlarms(const EEPROMSettings& settings) {

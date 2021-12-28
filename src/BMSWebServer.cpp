@@ -37,6 +37,7 @@ void BMSWebServer::setup(EEPROMSettings &settings, Config &config, Bms &bms)
     server.on("/dashboard", HTTP_GET, [&] (AsyncWebServerRequest *request) {
         BMSModuleManager& bmsModuleManager = bms.getBMSModuleManager();
         OutlanderCharger& outlanderCharger = bms.getOutlanderCharger();
+        IO io = bms.getIO();
         AsyncResponseStream *response = request->beginResponseStream("application/json");
         DynamicJsonDocument json(10240);
 
@@ -47,6 +48,15 @@ void BMSWebServer::setup(EEPROMSettings &settings, Config &config, Bms &bms)
         json["avgTemp"] = bmsModuleManager.getAvgTemperature();
         json["evseDuty"] = outlanderCharger.evse_duty;
         json["chargerStatus"] = outlanderCharger.reported_status;
+        json["chargerTemp1"] = outlanderCharger.reported_temp1;
+        json["chargerTemp2"] = outlanderCharger.reported_temp2;
+        json["chargerVoltage"] = outlanderCharger.reported_voltage;
+        json["chargerCurrent"] = outlanderCharger.reported_dc_current;
+        json["chargerRequestedCurrent"] = outlanderCharger.request_current;
+        json["contactorStatus"] = bms.contactorsClosed();
+        json["chargeEnabled"] = io.isChargeEnabled();
+        json["chargeOverride"] = io.getChargeOverride();
+
         byte status = bms.getStatus();
         if (status == Boot) {
             json["status"] = "Boot";
@@ -131,6 +141,22 @@ void BMSWebServer::setup(EEPROMSettings &settings, Config &config, Bms &bms)
                 request->redirect("/");
             }
         }
+        
+    );
+
+    server.on("/data", 
+        HTTP_POST, 
+        [](AsyncWebServerRequest * request){},
+        NULL,
+        [&](AsyncWebServerRequest * request, uint8_t *data, size_t len, size_t index, size_t total) {
+            if(request->hasParam("chargeOverride", true)) {
+                AsyncWebParameter* p = request->getParam("chargeOverride", true);
+                bms.getIO().setChargeOverride(p->value().c_str() == "true");
+            }
+
+            request->send(200, "application/json", "success");
+
+        }     
         
     );
 
