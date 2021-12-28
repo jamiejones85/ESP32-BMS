@@ -1,5 +1,15 @@
 #include "OutlanderCharger.h"
 
+bool OutlanderCharger::isDoneCharging(EEPROMSettings &settings, BMSModuleManager& bmsModuleManager) {
+    //if any cell goes over the set point, we are full
+    if (bmsModuleManager.getHighCellVolt() > settings.chargeVsetpoint) {
+        request_current = true;
+    }
+
+    //if current reaches the lowpoint setpoint, we are full
+
+    false;
+}
 void OutlanderCharger::processMessage(BMS_CAN_MESSAGE &inMsg) {
     if (inMsg.id == 0x389) {
       reported_voltage = inMsg.buf[0] * 2;
@@ -20,11 +30,10 @@ void OutlanderCharger::doCharge(EEPROMSettings &settings) {
 
 int OutlanderCharger::calculateCurrent(EEPROMSettings &settings) {
 
-    //hard stop
-    if (settings.chargeVsetpoint) {
-        request_current = 0;
-    }
-
+    //we want to limit the current to keep to the max set up until the voltage reaches the full battery
+    //voltage, at which point we want to bring down the current to stop the voltage going over, implmenting 
+    // constant current constant voltage phases of the charge.
+    
     //voltage derate
     if (reported_voltage > (settings.chargeVsetpoint * settings.seriesCells)) {
         request_current--;

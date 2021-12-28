@@ -3,11 +3,13 @@
 #include <Arduino.h>
 #include "BmsCan.h"
 #include "Config.h"
+#include "BMSModuleManager.h"
 
 class OutlanderCharger {
   public:
     void processMessage(BMS_CAN_MESSAGE &inMsg);
     void doCharge(EEPROMSettings &settings);
+    bool isDoneCharging(EEPROMSettings &settings, BMSModuleManager& bmsModuleManager);
     int reported_voltage = 0;
     int reported_dc_current = 0;
     int reported_temp1 = 0;

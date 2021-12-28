@@ -65,6 +65,12 @@ void Bms::updateStatus() {
     case Drive:
       break;
     case Charge:
+      if (!io.isChargeEnabled() || !contactorsClosed()) {
+        status = Ready;
+      }
+      if (outlanderCharger.isDoneCharging(settings, bmsModuleManager)) {
+        status = Ready;
+      }
       break;
     case Error:
       break;
