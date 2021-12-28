@@ -1,5 +1,7 @@
 # ESP32-BMS
 An ESP32 based BMS master for CAN based remote boards. Makes use of SimpBMS code for decoding the module data messages.
+Board Design: https://easyeda.com/jamie84.jj/simpbmsvw
+Enclosure: https://www.aliexpress.com/item/33013295705.html
 
 ## Completed
 - Cell Voltage Monitoring

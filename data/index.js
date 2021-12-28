@@ -40,13 +40,13 @@ function updateText(key, value) {
 		setValue('version', value);
 	} else if (key == 'status') {
 		setValue('mode', value);
-		// if (value == '"Charge"') {
+		if (value == '"Charge"') {
 			show('outlander-charger')
 			show('chargeContainer');
-		// } else {
-		// 	hide('outlander-charger')
-		// 	hide('chargeContainer');
-		// }
+		} else {
+			hide('outlander-charger')
+			hide('chargeContainer');
+		}
 	} else if (key == 'inverterstatus.val') {
 		if (parts[1] == 1) {
 			setValue('inverterStatus', "Run");
@@ -62,7 +62,7 @@ function updateText(key, value) {
 		setValue('cellhigh', value);
 	} else if (key == 'cellDelta') {
 		setValue('celldelta', value);
-	} else if (key == 'ac.val') {
+	} else if (key == 'chargeEnabled') {
 		setValue('acPresent', value);
 	}  else if (key == 'chargerRequestedCurrent') {
 		setValue('requestedChargeCurrent', value / 10);
