@@ -18,7 +18,6 @@
 #define EEPROM_SIZE 512
 
 int moduleidstart = 0x1CC;
-int cellspresent = 0;
 
 Bms bms;
 BMSWebServer bmsWebServer;

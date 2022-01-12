@@ -49,6 +49,10 @@
 			<h3>Lowest Cell</h3> 
 			<div class="data"><span id="celllow">3270</span>mV</div>
 		</div>
+		<div class="info-block">
+			<h3>Used</h3> 
+			<div class="data"><span id="ah">-</span>ah</div>
+		</div>
 	</div>
 
 	<figure class="highcharts-figure flex-block">
@@ -73,11 +77,13 @@
 	</div>
 	<div>AC Present: <span id="acPresent"></span></div>
 	<div><button id="acOverride">Override AC Present</button><button id="acOverrideOff" class="hidden">Remove AC Present Override</button></div>
+	<div><button id="shuntReset">Reset Shunt</button></div>
+
 </div>
-<p><a href="/voltages.html">Full Voltages</a>
+
 <p><a href="/wifi">Wifi Settings</a>
 <p><a href="#" onclick="toggleHidden('update')">Upload Update</a>
-<p><a href="/settings.html">Settings</a>
+<p><a href="#" onclick="toggleHidden('settings')">Settings</a>
 <div id="update" class="hidden">
 	<h2 id="update">Update</h2>
 	<p>Upload any files for updating this web interface.</p>
@@ -85,6 +91,21 @@
 		<input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
 		<input type="button" onclick="uploadFile();" value="Upload" />
 	</form>
+</div>
+<div id="settings" class="hidden">
+	<h2>Settings</h2>
+	<p>Update BMS settings.</p>
+	<div>Charge Setpoint: <span id="chargeSetpoint"></span>mV</div>
+	<div><input id="updateChargeSetpoint" />mV&nbsp;&nbsp;<button id="btnUpdateChargeSetpoint">Update</button></div>
+	<div>Charge Max: <span id="chargeMaxCurrent"></span>A</div>
+	<div><input id="updateChargeMaxCurrent" />A&nbsp;&nbsp;<button id="btnUpdateChargeMaxCurrent">Update</button></div>
+	<div>Usable Ah: <span id="usableAh"></span>%</div>
+	<div><input id="updateUsableAh" />%&nbsp;&nbsp;<button id="btnUpdateAh">Update</button></div>
+	<div>SOC Test: <span id="socOverride"></span>%</div>
+	<div><input id="updateSocOverride" />%&nbsp;&nbsp;<button id="btnSocOverride">Update</button></div>
+	<p>Changes above will be lost on a reboot unless saved.</p>
+	<div><button id="saveSettings">Save Changes</button></div>
+
 </div>
 
 </body>

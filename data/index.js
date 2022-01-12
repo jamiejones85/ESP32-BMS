@@ -35,19 +35,19 @@ function setValue(id, value) {
 	element.innerHTML = value
 }
 
-function updateText(key, value) {
-	if (key == 'firm.val') {
-		setValue('version', value);
-	} else if (key == 'status') {
-		setValue('mode', value);
-		if (value == '"Charge"') {
+function updateText(data) {
+	const parts = data.split("=");
+		if (parts[0] == 'stat.txt') {
+			setValue('mode', parts[1].replace('"', ""));
+		if (parts[1] == 'Charge') {
 			show('outlander-charger')
 			show('chargeContainer');
 		} else {
 			hide('outlander-charger')
 			hide('chargeContainer');
+
 		}
-	} else if (key == 'inverterstatus.val') {
+	} else if (parts[0] == 'inverterstatus.val') {
 		if (parts[1] == 1) {
 			setValue('inverterStatus', "Run");
 		} else {
@@ -56,33 +56,30 @@ function updateText(key, value) {
 		}
 
 		
-	} else if (key == 'minVolt') {
-		setValue('celllow', value);
-	} else if (key == 'maxVolt') {
-		setValue('cellhigh', value);
-	} else if (key == 'cellDelta') {
-		setValue('celldelta', value);
-	} else if (key == 'chargeEnabled') {
-		setValue('acPresent', value);
-	}  else if (key == 'chargerRequestedCurrent') {
-		setValue('requestedChargeCurrent', value / 10);
-	} else if (key == 'chargerStatus') {
-		const intVal = parseInt(value)
-		if (intVal == 0) {
-			setValue('chargerStatus', "Not Charging")
-		} else if (intVal == 0x04) {
-			setValue('chargerStatus', "Wait for Mains")
-		} else if (intVal == 0x08) {
-			setValue('chargerStatus', "Ready/Charging")
-		}
-	} else if (key == 'chargevsetpoint.val') {
-		setValue('chargeSetpoint', value)
-	} else if (key == 'chargecurrentmax.val') {
-		setValue('chargeMaxCurrent', value)
-	} else if (key == 'evseDuty') {
-		setValue('evseDuty', value);
-	} else if (key == 'socOverride.val') {
-		setValue('socOverride', value);
+	} else if (parts[0] == 'lowcell.val') {
+		setValue('celllow', parts[1]);
+	} else if (parts[0] == 'highcell.val') {
+		setValue('cellhigh', parts[1]);
+	} else if (parts[0] == 'celldelta.val') {
+		setValue('celldelta', parts[1]);
+	} else if (parts[0] == 'ac.val') {
+		setValue('acPresent', parts[1]);
+	}  else if (parts[0] == 'requestedchargecurrent.val') {
+		setValue('requestedChargeCurrent', parts[1] / 10);
+	} else if (parts[0] == 'chargerstatus.val') {
+		setValue('chargerStatus', parts[1])
+	} else if (parts[0] == 'chargevsetpoint.val') {
+		setValue('chargeSetpoint', parts[1])
+	} else if (parts[0] == 'chargecurrentmax.val') {
+		setValue('chargeMaxCurrent', parts[1])
+	} else if (parts[0] == 'evse_duty.val') {
+		setValue('evseDuty', parts[1]);
+	} else if (parts[0] == 'socOverride.val') {
+		setValue('socOverride', parts[1]);
+	} else if (parts[0] == 'amphours.val') {
+		setValue('ah', parts[1]);
+	} else if (parts[0] == 'capacity.val') {
+		setValue('usableAh', parts[1]);
 	}
 }
 
@@ -112,6 +109,14 @@ function initHandlers() {
 		xmlhttp.send("cmd=a");
 	}
 
+	const shuntReset = document.getElementById("shuntReset");
+	shuntReset.onclick = function() {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.open("POST", "cmd", true);
+		xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		xmlhttp.send("cmd=r");
+	}
+
 	const acOverrideOff = document.getElementById("acOverrideOff");
 	acOverrideOff.onclick = function() {
 		acOverrideOff.innerHTML = "Loading"
@@ -123,6 +128,11 @@ function initHandlers() {
 		xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 		xmlhttp.send("cmd=o");
 	}
+
+	bindSettingsButton("btnUpdateChargeSetpoint", "updateChargeSetpoint", "v")
+	bindSettingsButton("btnUpdateChargeMaxCurrent", "updateChargeMaxCurrent", "c")
+	bindSettingsButton("btnSocOverride", "updateSocOverride", "q")
+	bindSettingsButton("btnUpdateAh", "updateUsableAh", "a")
 
 }
 
@@ -141,21 +151,18 @@ function onLoad() {
 	output = document.getElementById("output");
 	initGauges();
 	initHandlers();
-
-	let timerId = setInterval(requestData, 1000)
+	chargerWebSocket("ws://"+ location.host +":81");
 }
 
 function onOpen(evt) {
 	console.log("Socket Connected");
 }
    
-function onMessage(json) {
-	const keys = Object.keys(json);
-	keys.forEach(function(k) {
-		updateGauge(k, json[k]);
-		updateText(k, json[k]);
-		updateButton(k, json[k]);
-	})
+function onMessage(evt) {
+	const json = JSON.parse(evt.data);
+	updateGauge(json.message);
+	updateText(json.message);
+	updateButton(json.message);
 
  }
 
@@ -173,21 +180,25 @@ function onMessage(json) {
 	pre.innerHTML = message; output.appendChild(pre);
  }
 
-function requestData() {
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.onload = function() {
-		var state = this.readyState;
-		var responseCode = xmlhttp.status;
-		if (state == this.DONE && responseCode == 200) {
-			var responseData = this.responseText;
-			const json = JSON.parse(responseData);
-			onMessage(json)
-		}
-	}
-	xmlhttp.open("GET", "/dashboard");
-	xmlhttp.send();
- }
+ function chargerWebSocket(wsUri) {
+	websocket = new WebSocket(wsUri);
+	   
+	websocket.onopen = function(evt) {
+	   onOpen(evt)
+	};
 
+	websocket.onclose = function(evt) {
+		console.log(evt)
+	};
+   
+	websocket.onmessage = function(evt) {
+	   onMessage(evt)
+	};
+   
+	websocket.onerror = function(evt) {
+	   onError(evt)
+	};
+ }
 
  function fileSelected()
 {

@@ -6,6 +6,8 @@
 BmsCan bmscan;
 BMS_CAN_MESSAGE msg;
 BMS_CAN_MESSAGE inMsg;
+int cellspresent = 0;
+String errorReason;
 
 Bms::Bms() {
   Serial.println("BMS instansiated");
@@ -30,6 +32,12 @@ void Bms::execute() {
     if(inverterLastRec + 200 < millis()) {
       inverterStatus = 0;
     }
+
+    if (cellspresent != bmsModuleManager.seriescells())
+      {
+        status = Error;
+        errorReason = "Serial Cell Count Error";
+      }
 }
 
 void Bms::ms500Task(const EEPROMSettings& settings) {
@@ -73,6 +81,10 @@ void Bms::updateStatus() {
       }
       break;
     case Error:
+      if (bmsModuleManager.getLowCellVolt() >= settings.underVSetpoint && cellspresent == settings.seriesCells) {
+        errorReason = "";
+        status = Ready;
+      }
       break;
   }
 }
