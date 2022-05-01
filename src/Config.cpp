@@ -36,6 +36,7 @@ EEPROMSettings Config::loadDefaults() {
     settings.dischVsetpoint = 3200;
     settings.cellGapAlarm = 90;
     settings.warnOffset = 100;
+    settings.useableAh = 20;
     //temperatures
     settings.overTSetpoint = 65;
     settings.underTSetpoint = -10;
@@ -65,6 +66,8 @@ EEPROMSettings Config::fromJson(JsonObject &doc) {
     settings.underVSetpoint = doc["underVSetpoint"];
     settings.chargeVsetpoint = doc["chargeVsetpoint"];
     settings.dischVsetpoint = doc["dischVsetpoint"];
+    settings.useableAh = doc["useableAh"];
+
     //temperatures
     settings.overTSetpoint = doc["overTSetpoint"];
     settings.underTSetpoint = doc["underTSetpoint"];
@@ -92,6 +95,7 @@ void Config::toJson(const EEPROMSettings& settings, DynamicJsonDocument &root) {
     root["underVSetpoint"] = settings.underVSetpoint;
     root["chargeVsetpoint"] = settings.chargeVsetpoint;
     root["dischVsetpoint"] = settings.dischVsetpoint;
+    root["useableAh"] = settings.useableAh;
     //temperatures
     root["overTSetpoint"] = settings.overTSetpoint;
     root["underTSetpoint"] = settings.underTSetpoint;

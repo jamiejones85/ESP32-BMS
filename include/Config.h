@@ -14,6 +14,7 @@ typedef struct EEPROMSettings {
   int secondBatteryCanIndex;
   //battery pack settings
   int seriesCells;
+  int useableAh;
   //voltages
   int overVSetpoint;
   int underVSetpoint;

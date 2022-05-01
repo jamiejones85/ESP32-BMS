@@ -2,10 +2,12 @@
 #include "BmsCan.h"
 #include "BMSModuleManager.h"
 #include "OutlanderCharger.h"
+#include "Shunt.h"
 
 BmsCan bmscan;
 BMS_CAN_MESSAGE msg;
 BMS_CAN_MESSAGE inMsg;
+Shunt shunt;
 int cellspresent = 0;
 String errorReason;
 
@@ -30,6 +32,10 @@ void Bms::setup(const EEPROMSettings& settings) {
 
 void Bms::execute() {
     Bms::canRead(0, 0);
+    if (settings.carCanIndex > 0) {
+      Bms::canRead(1, 0);
+    }
+    
 
     if(inverterLastRec + 200 < millis()) {
       inverterStatus = 0;
@@ -140,6 +146,7 @@ void Bms::canRead(int canInterfaceOffset, int idOffset)
     }
 
     if (settings.carCanIndex == canInterfaceOffset) {
+      shunt.process(inMsg);
       outlanderCharger.processMessage(inMsg);
       //from inverter
       if (inMsg.id == 0x02) {
