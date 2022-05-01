@@ -19,6 +19,7 @@ BMSModule::BMSModule()
   highestModuleVolt = 0.0f;
   exists = false;
   reset = false;
+  balstat = 0;
   moduleAddress = 0;
   timeout = 30000; //milliseconds before comms timeout;
 }
@@ -36,6 +37,7 @@ void BMSModule::clearmodule()
   exists = false;
   reset = false;
   moduleAddress = 0;
+  balstat = 0;
 }
 
 void BMSModule::decodetemp(BMS_CAN_MESSAGE &msg)
@@ -49,7 +51,15 @@ void BMSModule::decodetemp(BMS_CAN_MESSAGE &msg)
   }
   else
   {
-    temperatures[0] = (msg.buf[0] * 0.5) - 43;
+    if (msg.buf[0] < 0xDF)
+    {
+      temperatures[0] = (msg.buf[0] * 0.5) - 43;
+      balstat = msg.buf[2] + (msg.buf[3] << 8);
+    }
+    else
+    {
+      temperatures[0] = (msg.buf[3] * 0.5) - 43;
+    }
     if (msg.buf[4] < 0xF0)
     {
       temperatures[1] = (msg.buf[4] * 0.5) - 43;
@@ -145,7 +155,10 @@ void BMSModule::decodecan(int Id, BMS_CAN_MESSAGE &msg)
   }
 }
 
-
+int BMSModule::getBalStat()
+{
+  return balstat;
+}
 /*
   Reading the status of the board to identify any flags, will be more useful when implementing a sleep cycle
 */

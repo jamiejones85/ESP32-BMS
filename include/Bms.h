@@ -5,6 +5,7 @@
 #include "OutlanderCharger.h"
 #include "Config.h"
 #include "IO.h"
+#include "ArduinoJson.h"
 
 
 #define Boot 0
@@ -20,7 +21,9 @@ class Bms {
     void setup(const EEPROMSettings& settings);
     void execute();
     void ms500Task(const EEPROMSettings& settings);
+    void ms1000Task();
     void canRead(int canInterfaceOffset, int idOffset);
+    void printSummary();
     BMSModuleManager& getBMSModuleManager();
     OutlanderCharger& getOutlanderCharger();
     IO& getIO();
@@ -37,6 +40,7 @@ class Bms {
     unsigned char warning[4];
     unsigned long inverterLastRec;
     byte inverterStatus;
+    bool balanceCells;
     void broadcastStatus(const EEPROMSettings& settings);
     void updateAlarms(const EEPROMSettings& settings);
     void updateStatus();

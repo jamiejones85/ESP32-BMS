@@ -10,6 +10,8 @@ class BMSWebServer
 {
   public:
     void setup(EEPROMSettings &settings, Config &config, Bms &bms);
+    void execute();
+    void broadcast(const char * message);
   private:
 
 };

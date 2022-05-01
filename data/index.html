@@ -83,7 +83,7 @@
 
 <p><a href="/wifi">Wifi Settings</a>
 <p><a href="#" onclick="toggleHidden('update')">Upload Update</a>
-<p><a href="#" onclick="toggleHidden('settings')">Settings</a>
+<p><a href="/settings.html">Settings</a>
 <div id="update" class="hidden">
 	<h2 id="update">Update</h2>
 	<p>Upload any files for updating this web interface.</p>
@@ -92,21 +92,7 @@
 		<input type="button" onclick="uploadFile();" value="Upload" />
 	</form>
 </div>
-<div id="settings" class="hidden">
-	<h2>Settings</h2>
-	<p>Update BMS settings.</p>
-	<div>Charge Setpoint: <span id="chargeSetpoint"></span>mV</div>
-	<div><input id="updateChargeSetpoint" />mV&nbsp;&nbsp;<button id="btnUpdateChargeSetpoint">Update</button></div>
-	<div>Charge Max: <span id="chargeMaxCurrent"></span>A</div>
-	<div><input id="updateChargeMaxCurrent" />A&nbsp;&nbsp;<button id="btnUpdateChargeMaxCurrent">Update</button></div>
-	<div>Usable Ah: <span id="usableAh"></span>%</div>
-	<div><input id="updateUsableAh" />%&nbsp;&nbsp;<button id="btnUpdateAh">Update</button></div>
-	<div>SOC Test: <span id="socOverride"></span>%</div>
-	<div><input id="updateSocOverride" />%&nbsp;&nbsp;<button id="btnSocOverride">Update</button></div>
-	<p>Changes above will be lost on a reboot unless saved.</p>
-	<div><button id="saveSettings">Save Changes</button></div>
 
-</div>
 
 </body>
 </html>

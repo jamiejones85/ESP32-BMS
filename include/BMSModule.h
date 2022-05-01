@@ -31,6 +31,7 @@ class BMSModule
     uint8_t getCUVCells();
     void setAddress(int newAddr);
     int getAddress();
+    int getBalStat();
     bool isExisting();
     bool isReset();
     void setReset(bool ex);
@@ -61,7 +62,7 @@ class BMSModule
     int sensor;
     uint8_t moduleAddress;     //1 to 0x3E
     int scells;
-    int balstat;
+    uint32_t balstat;
     uint32_t lasterror;
     uint8_t cmuerror;
     uint32_t timeout;

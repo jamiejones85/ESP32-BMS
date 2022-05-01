@@ -21,6 +21,8 @@ void Bms::setup(const EEPROMSettings& settings) {
 
   //only supports 1 pack at the moment
   bmsModuleManager.setPstrings(settings.parallelStrings);
+  bmsModuleManager.setBalanceHyst(settings.balanceHyst);
+
   bmscan.begin(500000, 0);
   bmscan.begin(500000, 1);
   bmscan.begin(500000, 2);
@@ -40,9 +42,30 @@ void Bms::execute() {
       }
 }
 
+void Bms::ms1000Task() {
+  Bms::printSummary();
+  //comms check
+  if (bmsModuleManager.checkcomms()) {
+    if (status == Error) {
+      status = Boot;
+    }
+  } else {
+    status = Error;
+    errorReason = "BMS Communication timeout";
+  }
+}
+
 void Bms::ms500Task(const EEPROMSettings& settings) {
     bmsModuleManager.sendCommand(msg, bmscan);
+    if (cellspresent == 0) {
+          cellspresent = bmsModuleManager.seriescells();
+    }
+
     bmsModuleManager.getAllVoltTemp();
+    if (balanceCells == true)
+    {
+        bmsModuleManager.balanceCells(msg, bmscan, 0);//1 is debug
+    }
     Bms::updateAlarms(settings);
     Bms::updateStatus();
 
@@ -62,6 +85,11 @@ void Bms::updateStatus() {
       if (io.isChargeEnabled()) {
         status = Precharge;
       }
+      if (bmsModuleManager.getHighCellVolt() > settings.balanceVoltage && bmsModuleManager.getHighCellVolt() > bmsModuleManager.getLowCellVolt() + settings.balanceHyst) {
+        balanceCells = true;
+      } else {
+        balanceCells = false;
+      }
       break;
     case Precharge:
       if (io.isChargeEnabled() && contactorsClosed()) {
@@ -75,6 +103,11 @@ void Bms::updateStatus() {
     case Charge:
       if (!io.isChargeEnabled() || !contactorsClosed()) {
         status = Ready;
+      }
+      if (bmsModuleManager.getHighCellVolt() > settings.balanceVoltage) {
+        balanceCells = true; 
+      } else {
+        balanceCells = false;
       }
       if (outlanderCharger.isDoneCharging(settings, bmsModuleManager)) {
         status = Ready;
@@ -197,8 +230,8 @@ void Bms::broadcastStatus(const EEPROMSettings& settings) {
 }
 
 OutlanderCharger& Bms::getOutlanderCharger() {
-  Serial.print("Get: ");
-  Serial.println(outlanderCharger.evse_duty, HEX);
+  // Serial.print("Get: ");
+  // Serial.println(outlanderCharger.evse_duty, HEX);
   return outlanderCharger;
 }
 
@@ -268,4 +301,52 @@ void Bms::updateAlarms(const EEPROMSettings& settings) {
   {
     Bms::warning[1] = 0x01;
   }
+}
+
+void Bms::printSummary() {
+  Serial.print("BMS Status: ");
+
+  switch (status)
+    {
+      case (Boot):
+        Serial.print("Boot");
+        break;
+
+      case (Ready):
+        Serial.print("Ready");
+        break;
+
+      case (Precharge):
+        Serial.print("Precharge");
+        break;
+
+      case (Drive):
+        Serial.print("Drive");
+        break;
+
+      case (Charge):
+        Serial.print("Charge");
+        break;
+
+      case (Error):
+        Serial.print("Error");
+        break;
+    }
+  
+  Serial.print("  ");
+  if (io.isChargeEnabled()) {
+    Serial.print("| AC Present");
+  }
+
+  if (balanceCells == true)
+  {
+    Serial.print("| Balancing Active ");
+  }
+  Serial.println("  ");
+  if (status == Error) {
+    Serial.print("Reason: ");
+    Serial.println(errorReason);
+  }
+  bmsModuleManager.printPackSummary();
+
 }

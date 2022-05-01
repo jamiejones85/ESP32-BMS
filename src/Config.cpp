@@ -47,7 +47,8 @@ EEPROMSettings Config::loadDefaults() {
     settings.chargerTempDeRate = 70;
 
     settings.parallelStrings = 1;
-
+    settings.balanceVoltage = 3900;
+    settings.balanceHyst = 40;
     return settings;
 }
 
@@ -72,6 +73,11 @@ EEPROMSettings Config::fromJson(JsonObject &doc) {
     //charging
     settings.chargecurrentmax = doc["chargecurrentmax"];
 
+    settings.balanceVoltage = doc["balanceVoltage"];
+    settings.balanceHyst = doc["balanceHyst"];
+    settings.parallelStrings = doc["parallelStrings"];
+
+
     return settings;
 }
 
@@ -94,5 +100,8 @@ void Config::toJson(const EEPROMSettings& settings, DynamicJsonDocument &root) {
     //charging
     root["chargecurrentmax"] = settings.chargecurrentmax;
 
+    root["balanceVoltage"] = settings.balanceVoltage;
+    root["balanceHyst"] = settings.balanceHyst;
+    root["parallelStrings"] = settings.parallelStrings;
 
 }

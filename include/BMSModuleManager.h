@@ -16,6 +16,7 @@ class BMSModuleManager
     void clearmodules();
     void decodecan(BMS_CAN_MESSAGE &msg, int debug);
     void decodetemp(BMS_CAN_MESSAGE &msg, int debug);
+    void balanceCells(BMS_CAN_MESSAGE &msg, BmsCan &bmscan, int debug);
     void getAllVoltTemp();
     void readSetpoints();
     void setBatteryID(int id);
@@ -52,6 +53,7 @@ class BMSModuleManager
     int Pstring;
     float LowCellVolt;
     float HighCellVolt;
+    float balHys;
     float lowestPackVolt;
     float highestPackVolt;
     float lowestPackTemp;

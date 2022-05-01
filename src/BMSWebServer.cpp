@@ -2,9 +2,22 @@
 #include "SPIFFS.h"
 
 AsyncWebServer server(80);
+AsyncWebSocket ws("/ws");
+AsyncEventSource events("/events");
+
+void BMSWebServer::execute() {
+    ws.cleanupClients();
+}
+
+void BMSWebServer::broadcast(const char * message) {
+    ws.printfAll(message);
+}
 
 void BMSWebServer::setup(EEPROMSettings &settings, Config &config, Bms &bms)
 {
+    // ws.onEvent(onWsEvent);
+    server.addHandler(&ws);
+
     server.on("/wifi", [&] (AsyncWebServerRequest *request) {
         bool updated = true;
         if(request->hasParam("apSSID", true) && request->hasParam("apPW", true)) 
@@ -101,8 +114,8 @@ void BMSWebServer::setup(EEPROMSettings &settings, Config &config, Bms &bms)
         [](AsyncWebServerRequest * request){},
         NULL,
         [&](AsyncWebServerRequest * request, uint8_t *data, size_t len, size_t index, size_t total) {
-    
-        const size_t JSON_DOC_SIZE = 512U;
+        Serial.println("Config POST");
+        const size_t JSON_DOC_SIZE = 1024U;
         DynamicJsonDocument jsonDoc(JSON_DOC_SIZE);
         
         if (DeserializationError::Ok == deserializeJson(jsonDoc, (const char*)data))
@@ -110,8 +123,11 @@ void BMSWebServer::setup(EEPROMSettings &settings, Config &config, Bms &bms)
             JsonObject obj = jsonDoc.as<JsonObject>();
             settings = config.fromJson(obj);
             config.save(settings);
+            request->send(200, "application/json", "success");
+
+        } else {
+            request->send(200, "application/json", "DeserializationError");
         }
-        request->send(200, "application/json", "success");
     });
 
     server.on("/edit", 

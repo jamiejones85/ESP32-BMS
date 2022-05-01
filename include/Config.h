@@ -32,6 +32,9 @@ typedef struct EEPROMSettings {
   int chargerTempDeRate;
   int parallelStrings;
 
+  float balanceVoltage;
+  float balanceHyst;
+
 } EEPROMSettings;
 
 class Config

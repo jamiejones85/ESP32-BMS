@@ -3,7 +3,6 @@
 
 BMSModuleManager::BMSModuleManager()
 {
-  Serial.println("BMSModuleManager instatiated");
   for (int i = 1; i <= MAX_MODULE_ADDR; i++) {
     modules[i].setExists(false);
     modules[i].setAddress(i);
@@ -849,6 +848,7 @@ void BMSModuleManager::printPackDetailsJson(DynamicJsonDocument &root)
       moduleNode["temperature1"] =  modules[y].getTemperature(0);
       moduleNode["temperature2"] =  modules[y].getTemperature(1);
       moduleNode["temperature3"] =  modules[y].getTemperature(2);
+      moduleNode["balance_status"] = modules[y].getBalStat();
       JsonArray cellsNode = moduleNode.createNestedArray("cells");
       faults = modules[y].getFaults();
       alerts = modules[y].getAlerts();
@@ -905,7 +905,8 @@ void BMSModuleManager::printPackDetails(int digits)
       Serial.print(modules[y].getTemperature(1));
       Serial.print("C Temp 3: ");
       Serial.print(modules[y].getTemperature(2));
-      Serial.println("C");
+      Serial.print("C | Bal Stat: ");
+      Serial.println(modules[y].getBalStat(), HEX);
     }
   }
 }
@@ -937,4 +938,144 @@ void BMSModuleManager::printAllCSV(unsigned long timestamp, float current, int S
     }
   }
   
+}
+
+void BMSModuleManager::setBalanceHyst(float newVal)
+{
+  balHys = newVal;
+  Serial.println();
+  Serial.println(balHys, 3);
+}
+
+void BMSModuleManager::balanceCells(BMS_CAN_MESSAGE &msg, BmsCan &bmscan, int debug)
+{
+  uint16_t balance = 0;//bit 0 - 5 are to activate cell balancing 1-6
+  Serial.println();
+  Serial.println(LowCellVolt + balHys, 3);
+  for (int y = 1; y < 63; y++)
+  {
+    if (modules[y].isExisting() == 1)
+    {
+      balance = 0;
+      for (int i = 0; i < 12; i++)
+      {
+        if ((LowCellVolt + balHys) < modules[y].getCellVoltage(i))
+        {
+          balance = balance | (1 << i);
+        }
+        /*
+        else
+        {
+          Serial.print(" | ");
+          Serial.print(i);
+        }
+        */
+      }
+      if (debug == 1)
+      {
+        Serial.println();
+        Serial.print("Module ");
+        Serial.print(y);
+        Serial.print(" | ");
+        Serial.println(balance, HEX);
+
+      }
+      for (int i = 0; i < 8; i++)
+      {
+        if (bitRead(balance, i) == 1)
+        {
+          msg.buf[i] = 0x08;
+        }
+        else
+        {
+          msg.buf[i] = 0x00;
+        }
+      }
+      switch (y)
+      {
+        case (1):
+            msg.id  = 0x1A55540A;
+          break;
+        case (2):
+            msg.id  = 0x1A55540C;
+          break;
+        case (3):
+            msg.id  = 0x1A55540E;
+          break;
+        case (4):
+            msg.id  = 0x1A555410;
+          break;
+        case (5):
+            msg.id  = 0x1A555412;
+          break;
+        case (6):
+            msg.id  = 0x1A555414;
+          break;
+        case (7):
+            msg.id  = 0x1A555416;
+          break;
+        case (8):
+            msg.id  = 0x1A555418;
+          break;
+
+        default:
+          return;
+          break;
+      }
+      msg.len = 8;
+      msg.flags.extended = 1;
+      bmscan.write(msg, 0);
+
+      for (int i = 8; i < 13; i++)
+      {
+        if (bitRead(balance, i) == 1)
+        {
+          msg.buf[i] = 0x08;
+        }
+        else
+        {
+          msg.buf[i] = 0x00;
+        }
+      }
+      msg.buf[4] = 0xFE;
+      msg.buf[5] = 0xFE;
+      msg.buf[6] = 0xFE;
+      msg.buf[7] = 0xFE;
+      switch (y)
+      {
+        case (1):
+            msg.id  = 0x1A55540B;
+          break;
+        case (2):
+            msg.id  = 0x1A55540D;
+          break;
+        case (3):
+            msg.id  = 0x1A55540F;
+          break;
+        case (4):
+            msg.id  = 0x1A555411;
+          break;
+        case (5):
+            msg.id  = 0x1A555413;
+          break;
+        case (6):
+            msg.id  = 0x1A555415;
+          break;
+        case (7):
+            msg.id  = 0x1A555417;
+          break;
+        case (8):
+            msg.id  = 0x1A555419;
+          break;
+
+        default:
+          return;
+          break;
+      }
+      msg.len = 8;
+      msg.flags.extended = 1;
+      bmscan.write(msg, 0);
+    }
+  }
+  msg.flags.extended = 0;
 }

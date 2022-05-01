@@ -13,10 +13,12 @@
 #include <EEPROM.h>
 #include <Ticker.h>
 #include <Update.h>
+#include <ArduinoOTA.h>
+
 
 #define WDT_TIMEOUT 3
 #define EEPROM_SIZE 512
-
+#define HOSTNAME "ESP32-BMS"
 int moduleidstart = 0x1CC;
 
 Bms bms;
@@ -29,10 +31,10 @@ Config config;
 Scheduler ts;
 
 void staCheck();
-void ms20000Callback();
+void ms1000Callback();
 void ms500Callback();
 Task ms500Task(500, TASK_FOREVER, &ms500Callback);
-Task ms20000Task(20000, TASK_FOREVER, &ms20000Callback);
+Task ms1000Task(1000, TASK_FOREVER, &ms1000Callback);
 Ticker sta_tick(staCheck, 5000, 0, MICROS);
 
 void staCheck(){
@@ -54,42 +56,20 @@ void setup(){
     return;
   }
 
-  Serial.println(SPIFFS.exists("/firmware.bin"));
-
-  File file = SPIFFS.open("/firmware.bin");
-  
-  if(SPIFFS.exists("/firmware.bin") && file){
-      Serial.println("Updating....");
-      size_t fileSize = file.size();
- 
-      if(!Update.begin(fileSize)){
-        Serial.println("Cannot do the update");
-      } else {
-        Update.writeStream(file);
-
-        if(Update.end()){
-          Serial.println("Successful update");  
-        }else {
-          Serial.println("Error Occurred: " + String(Update.getError()));
-        }
-      }
-
-     
-      file.close();
-      Serial.println("Deleting firmware.bin");
-      SPIFFS.remove("/firmware.bin");
-      Serial.println("Reset in 4 seconds...");
-      delay(4000);
-      ESP.restart();
-  }
-
-
   //AP and Station Mode
   WiFi.mode(WIFI_AP_STA);
-  WiFi.hostname("ESP32-BMS");
+  WiFi.hostname(HOSTNAME);
   // Connect to Wi-Fi
   WiFi.begin();
   sta_tick.start();
+
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+      //make sure the dog is kicked
+      esp_task_wdt_reset();
+  });
+
+  ArduinoOTA.setHostname(HOSTNAME);
+  ArduinoOTA.begin();
 
   settings = config.load();
 
@@ -99,17 +79,17 @@ void setup(){
   ts.addTask(ms500Task);
   ms500Task.enable();
 
-  ts.addTask(ms20000Task);
-  ms20000Task.enable();
+  ts.addTask(ms1000Task);
+  ms1000Task.enable();
 
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
   Serial.println("Setup Done");
 }
 
-//Execute every 20 seconds
-void ms20000Callback() {
-
+//Execute every 1 seconds
+void ms1000Callback() {
+  bms.ms1000Task();
 }
 
 //Execute every half second
@@ -118,8 +98,10 @@ void ms500Callback() {
 }
 
 void loop(){
+  ArduinoOTA.handle();
   sta_tick.update();
   ts.execute();
+  bmsWebServer.execute();
   bms.execute();
   esp_task_wdt_reset();
 }

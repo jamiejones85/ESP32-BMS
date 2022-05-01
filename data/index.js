@@ -35,11 +35,10 @@ function setValue(id, value) {
 	element.innerHTML = value
 }
 
-function updateText(data) {
-	const parts = data.split("=");
-		if (parts[0] == 'stat.txt') {
-			setValue('mode', parts[1].replace('"', ""));
-		if (parts[1] == 'Charge') {
+function updateText(key, data) {
+		if (key == 'status') {
+			setValue('mode', data.replace('"', ""));
+		if (data == 'Charge') {
 			show('outlander-charger')
 			show('chargeContainer');
 		} else {
@@ -47,8 +46,8 @@ function updateText(data) {
 			hide('chargeContainer');
 
 		}
-	} else if (parts[0] == 'inverterstatus.val') {
-		if (parts[1] == 1) {
+	} else if (key == 'inverterstatus.val') {
+		if (data == 1) {
 			setValue('inverterStatus', "Run");
 		} else {
 			setValue('inverterStatus', "Off");
@@ -56,30 +55,30 @@ function updateText(data) {
 		}
 
 		
-	} else if (parts[0] == 'lowcell.val') {
-		setValue('celllow', parts[1]);
-	} else if (parts[0] == 'highcell.val') {
-		setValue('cellhigh', parts[1]);
-	} else if (parts[0] == 'celldelta.val') {
-		setValue('celldelta', parts[1]);
-	} else if (parts[0] == 'ac.val') {
-		setValue('acPresent', parts[1]);
-	}  else if (parts[0] == 'requestedchargecurrent.val') {
-		setValue('requestedChargeCurrent', parts[1] / 10);
-	} else if (parts[0] == 'chargerstatus.val') {
-		setValue('chargerStatus', parts[1])
-	} else if (parts[0] == 'chargevsetpoint.val') {
-		setValue('chargeSetpoint', parts[1])
-	} else if (parts[0] == 'chargecurrentmax.val') {
-		setValue('chargeMaxCurrent', parts[1])
-	} else if (parts[0] == 'evse_duty.val') {
-		setValue('evseDuty', parts[1]);
-	} else if (parts[0] == 'socOverride.val') {
-		setValue('socOverride', parts[1]);
-	} else if (parts[0] == 'amphours.val') {
-		setValue('ah', parts[1]);
-	} else if (parts[0] == 'capacity.val') {
-		setValue('usableAh', parts[1]);
+	} else if (key == 'minVolt') {
+		setValue('celllow', Math.round(data * 1000));
+	} else if (key == 'maxVolt') {
+		setValue('cellhigh', Math.round(data * 1000));
+	} else if (key == 'cellDelta') {
+		setValue('celldelta', Math.round(data * 1000));
+	} else if (key == 'chargeEnabled') {
+		setValue('acPresent', data);
+	}  else if (key == 'requestedchargecurrent.val') {
+		setValue('requestedChargeCurrent', data / 10);
+	} else if (key == 'chargerstatus.val') {
+		setValue('chargerStatus', data)
+	} else if (key == 'chargevsetpoint.val') {
+		setValue('chargeSetpoint', data)
+	} else if (key == 'chargecurrentmax.val') {
+		setValue('chargeMaxCurrent', data)
+	} else if (key == 'evse_duty.val') {
+		setValue('evseDuty', data);
+	} else if (key == 'socOverride.val') {
+		setValue('socOverride', data);
+	} else if (key == 'amphours.val') {
+		setValue('ah', data);
+	} else if (key == 'capacity.val') {
+		setValue('usableAh', data);
 	}
 }
 
@@ -129,40 +128,38 @@ function initHandlers() {
 		xmlhttp.send("cmd=o");
 	}
 
-	bindSettingsButton("btnUpdateChargeSetpoint", "updateChargeSetpoint", "v")
-	bindSettingsButton("btnUpdateChargeMaxCurrent", "updateChargeMaxCurrent", "c")
-	bindSettingsButton("btnSocOverride", "updateSocOverride", "q")
-	bindSettingsButton("btnUpdateAh", "updateUsableAh", "a")
-
 }
 
-function bindSettingsButton(buttonId, inputId, command) {
-	const button = document.getElementById(buttonId);
-	button.onclick = function() {
-		const updateInput = document.getElementById(inputId);
-		var xmlhttp = new XMLHttpRequest();
-		xmlhttp.open("POST", "cmd", true);
-		xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		xmlhttp.send("cmd=" + command + " "  + updateInput.value);
-	}
+function dashboard() {
+	var xhr = new XMLHttpRequest();
+
+	xhr.open('GET', '/dashboard')
+	xhr.onload = function() {
+		const json = JSON.parse(xhr.responseText);
+		onMessage(json)
+	};
+	xhr.send()
 }
 
 function onLoad() {
 	output = document.getElementById("output");
 	initGauges();
 	initHandlers();
-	chargerWebSocket("ws://"+ location.host +":81");
+	chargerWebSocket("ws://"+ location.host +"/ws");
+	setInterval(dashboard, 1000);  
 }
 
 function onOpen(evt) {
 	console.log("Socket Connected");
 }
    
-function onMessage(evt) {
-	const json = JSON.parse(evt.data);
-	updateGauge(json.message);
-	updateText(json.message);
-	updateButton(json.message);
+function onMessage(json) {
+	Object.keys(json).forEach(function(key) {
+		updateGauge(key, json[key]);
+		updateText(key, json[key]);
+		// updateButton(json.message);
+	});
+
 
  }
 
@@ -192,7 +189,7 @@ function onMessage(evt) {
 	};
    
 	websocket.onmessage = function(evt) {
-	   onMessage(evt)
+		console.log(evt)
 	};
    
 	websocket.onerror = function(evt) {
