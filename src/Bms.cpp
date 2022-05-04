@@ -78,6 +78,10 @@ void Bms::ms500Task(const EEPROMSettings& settings) {
     Bms::updateStatus();
 
     Bms::broadcastStatus(settings);
+
+    if (status == Charge) {
+      outlanderCharger.doCharge(settings, bmsModuleManager, msg, bmscan);
+    }
 }
 
 //Boot goes to ready

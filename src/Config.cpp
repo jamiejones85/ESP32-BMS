@@ -28,7 +28,6 @@ EEPROMSettings Config::loadDefaults() {
     settings.carCanIndex = 1;
     settings.firstBatteryCanIndex = 0;
     settings.secondBatteryCanIndex = -1;
-    settings.chargerCanIndex = 1;
     settings.seriesCells = 96;
     settings.overVSetpoint = 4200;
     settings.underVSetpoint = 3000;
@@ -60,7 +59,6 @@ EEPROMSettings Config::fromJson(JsonObject &doc) {
     settings.carCanIndex = doc["carCanIndex"];
     settings.firstBatteryCanIndex = doc["firstBatteryCanIndex"];
     settings.secondBatteryCanIndex = doc["secondBatteryCanIndex"];
-    settings.chargerCanIndex = doc["chargerCanIndex"];
     settings.seriesCells = doc["seriesCells"];
     settings.overVSetpoint = doc["overVSetpoint"];
     settings.underVSetpoint = doc["underVSetpoint"];
@@ -89,7 +87,6 @@ void Config::toJson(const EEPROMSettings& settings, DynamicJsonDocument &root) {
     root["carCanIndex"] = settings.carCanIndex;
     root["firstBatteryCanIndex"] = settings.firstBatteryCanIndex;
     root["secondBatteryCanIndex"] = settings.secondBatteryCanIndex;
-    root["chargerCanIndex"] = settings.chargerCanIndex;
     root["seriesCells"] = settings.seriesCells;
     root["overVSetpoint"] = settings.overVSetpoint;
     root["underVSetpoint"] = settings.underVSetpoint;

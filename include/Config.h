@@ -8,7 +8,6 @@
 typedef struct EEPROMSettings {
   int version;
   //can settings
-  int chargerCanIndex;
   int carCanIndex;
   int firstBatteryCanIndex;
   int secondBatteryCanIndex;
@@ -31,6 +30,9 @@ typedef struct EEPROMSettings {
   //charging
   int chargecurrentmax;
   int chargerTempDeRate;
+  int chargeHys;
+  int chargeCurrentEnd;
+
   int parallelStrings;
 
   float balanceVoltage;
