@@ -78,7 +78,7 @@ EEPROMSettings Config::fromJson(JsonObject &doc) {
 
     settings.balanceVoltage = doc["balanceVoltage"];
     settings.balanceHyst = doc["balanceHyst"];
-    settings.parallelStrings = doc["parallelStrings"];
+    settings.parallelStrings = doc["parallelStrings"]; //remove and use second pack can index
 
 
     return settings;

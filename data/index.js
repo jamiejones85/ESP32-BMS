@@ -75,10 +75,12 @@ function updateText(key, data) {
 		setValue('evseDuty', data);
 	} else if (key == 'socOverride.val') {
 		setValue('socOverride', data);
-	} else if (key == 'amphours.val') {
-		setValue('ah', data);
+	} else if (key == 'ahUsed') {
+		setValue('ah', data.toFixed(1));
 	} else if (key == 'capacity.val') {
 		setValue('usableAh', data);
+	} else if (key == 'balanceActive') {
+		setValue('balanceStatus', data);
 	}
 }
 

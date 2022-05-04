@@ -12,6 +12,7 @@ class BMSWebServer
     void setup(EEPROMSettings &settings, Config &config, Bms &bms);
     void execute();
     void broadcast(const char * message);
+    AsyncWebSocket& getWebSocket();
   private:
 
 };

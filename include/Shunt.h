@@ -3,15 +3,21 @@
 #include "BmsCan.h"
 #include "Config.h"
 
+typedef struct ShuntData {
+    signed long voltage1, voltage2, voltage3;
+    double amphours, kilowatthours, kilowatts;
+    int32_t milliamps;
+};
+
 class Shunt
 {
   public:
+    void resetCounters(BMS_CAN_MESSAGE &msg, BmsCan &bmscan, const EEPROMSettings &settings);
     void process(BMS_CAN_MESSAGE &inMsg);
-    int getStateOfCharge(EEPROMSettings &settings);
+    int getStateOfCharge(const EEPROMSettings &settings);
+    ShuntData getData();
   private:
-    signed long voltage1, voltage2, voltage3 = 0; //mV only with ISAscale sensor
-    double amphours, kilowatthours, kilowatts; //only with ISAscale sensor
-    int32_t CANmilliamps;
+    ShuntData data;
 };
 
 #endif

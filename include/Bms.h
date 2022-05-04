@@ -6,6 +6,7 @@
 #include "Config.h"
 #include "IO.h"
 #include "ArduinoJson.h"
+#include "Shunt.h"
 
 
 #define Boot 0
@@ -26,9 +27,12 @@ class Bms {
     void printSummary();
     BMSModuleManager& getBMSModuleManager();
     OutlanderCharger& getOutlanderCharger();
+    Shunt& getShunt();
+
     IO& getIO();
     byte getStatus();
     bool contactorsClosed();
+    bool getBalanceCells();
 
   private:
     EEPROMSettings settings;
@@ -40,6 +44,7 @@ class Bms {
     unsigned char warning[4];
     unsigned long inverterLastRec;
     byte inverterStatus;
+    bool inverterInForwardReverse;
     bool balanceCells;
     void broadcastStatus(const EEPROMSettings& settings);
     void updateAlarms(const EEPROMSettings& settings);

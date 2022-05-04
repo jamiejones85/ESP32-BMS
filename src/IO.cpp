@@ -18,6 +18,7 @@ bool IO::isChargeEnabled() {
     return digitalRead(CHARGE_IN)  || chargeOverride == true;
 }
 
-bool IO::isDriveEnabled() {
-
+bool IO::isDriveEnabled(bool inverterInForwardReverse) {
+    //read pin or inverter status in forward/reverse
+    return digitalRead(DRIVE_IN)  || inverterInForwardReverse == true;
 }

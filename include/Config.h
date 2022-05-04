@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 #define MAX_MODULE_ADDR     0x3E
-#define EEPROM_VERSION      0x02   //update any time EEPROM struct below is changed.
+#define EEPROM_VERSION      0x03   //update any time EEPROM struct below is changed.
 #include "ArduinoJson.h"
 
 

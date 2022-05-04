@@ -1,10 +1,14 @@
 #include "BMSWebServer.h"
 #include "SPIFFS.h"
+#include "Shunt.h"
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 AsyncEventSource events("/events");
 
+AsyncWebSocket& BMSWebServer::getWebSocket() {
+    return ws;
+}
 void BMSWebServer::execute() {
     ws.cleanupClients();
 }
@@ -50,6 +54,7 @@ void BMSWebServer::setup(EEPROMSettings &settings, Config &config, Bms &bms)
     server.on("/dashboard", HTTP_GET, [&] (AsyncWebServerRequest *request) {
         BMSModuleManager& bmsModuleManager = bms.getBMSModuleManager();
         OutlanderCharger& outlanderCharger = bms.getOutlanderCharger();
+        ShuntData data = bms.getShunt().getData();
         IO io = bms.getIO();
         AsyncResponseStream *response = request->beginResponseStream("application/json");
         DynamicJsonDocument json(10240);
@@ -69,7 +74,10 @@ void BMSWebServer::setup(EEPROMSettings &settings, Config &config, Bms &bms)
         json["contactorStatus"] = bms.contactorsClosed();
         json["chargeEnabled"] = io.isChargeEnabled();
         json["chargeOverride"] = io.getChargeOverride();
-
+        json["ahUsed"] = data.amphours;
+        json["soc"] = bms.getShunt().getStateOfCharge(settings);
+        json["balanceActive"] = bms.getBalanceCells();
+        json["test"] = (settings.balanceVoltage / 1000);
         byte status = bms.getStatus();
         if (status == Boot) {
             json["status"] = "Boot";

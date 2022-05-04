@@ -80,11 +80,10 @@ void BMSModuleManager::decodetemp(BMS_CAN_MESSAGE &msg, int debug)
   
   // The code below i belive should be deleted as it prevents tempertures from being read rom the second canbus (temp can id's offset by 8), so they would go from 9 to 16 and you wouldnt see modules 11+  
   /*
-  if (CMU > 10 && CMU < 60)
-  {
-    CMU = (CMU * 0.5) - 15;
-  }
-  /*
+    if (CMU > 10 && CMU < 60)
+    {
+      CMU = (CMU * 0.5) - 15;
+    }
     if (CMU > 64 && CMU < 73)
     {
     CMU = CMU - 48;
@@ -942,7 +941,7 @@ void BMSModuleManager::printAllCSV(unsigned long timestamp, float current, int S
 
 void BMSModuleManager::setBalanceHyst(float newVal)
 {
-  balHys = newVal;
+  balHys = newVal ;
   Serial.println();
   Serial.println(balHys, 3);
 }
@@ -950,13 +949,12 @@ void BMSModuleManager::setBalanceHyst(float newVal)
 void BMSModuleManager::balanceCells(BMS_CAN_MESSAGE &msg, BmsCan &bmscan, int debug)
 {
   uint16_t balance = 0;//bit 0 - 5 are to activate cell balancing 1-6
-  Serial.println();
-  Serial.println(LowCellVolt + balHys, 3);
   for (int y = 1; y < 63; y++)
   {
     if (modules[y].isExisting() == 1)
     {
       balance = 0;
+      //which cells in this module need balancing
       for (int i = 0; i < 12; i++)
       {
         if ((LowCellVolt + balHys) < modules[y].getCellVoltage(i))
@@ -1030,13 +1028,15 @@ void BMSModuleManager::balanceCells(BMS_CAN_MESSAGE &msg, BmsCan &bmscan, int de
       {
         if (bitRead(balance, i) == 1)
         {
-          msg.buf[i] = 0x08;
+          msg.buf[i - 8] = 0x08;
         }
         else
         {
-          msg.buf[i] = 0x00;
+          msg.buf[i - 8] = 0x00;
         }
       }
+
+
       msg.buf[4] = 0xFE;
       msg.buf[5] = 0xFE;
       msg.buf[6] = 0xFE;

@@ -2,7 +2,7 @@ var chartSoc, chartTemp, chartCurrent, chartChargerCurrent, chartChargerTemp, ch
 
 var updateGauge = function(key, value) {
 
-    if (key == 'soc.val') {
+    if (key == 'soc') {
         updateSoc(value)
     } else if (key == 'avgTemp') {
         updateTemp(value)

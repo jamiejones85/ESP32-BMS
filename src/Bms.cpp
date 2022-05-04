@@ -23,7 +23,7 @@ void Bms::setup(const EEPROMSettings& settings) {
 
   //only supports 1 pack at the moment
   bmsModuleManager.setPstrings(settings.parallelStrings);
-  bmsModuleManager.setBalanceHyst(settings.balanceHyst);
+  bmsModuleManager.setBalanceHyst(settings.balanceHyst / 1000);
 
   bmscan.begin(500000, 0);
   bmscan.begin(500000, 1);
@@ -32,6 +32,7 @@ void Bms::setup(const EEPROMSettings& settings) {
 
 void Bms::execute() {
     Bms::canRead(0, 0);
+
     if (settings.carCanIndex > 0) {
       Bms::canRead(1, 0);
     }
@@ -39,6 +40,7 @@ void Bms::execute() {
 
     if(inverterLastRec + 200 < millis()) {
       inverterStatus = 0;
+      inverterInForwardReverse = false;
     }
 
     if (cellspresent != bmsModuleManager.seriescells())
@@ -88,10 +90,10 @@ void Bms::updateStatus() {
       break;
     case Ready:
       //check for AC input and go to charge or precharge
-      if (io.isChargeEnabled()) {
+      if (io.isChargeEnabled() || io.isDriveEnabled(inverterInForwardReverse)) {
         status = Precharge;
       }
-      if (bmsModuleManager.getHighCellVolt() > settings.balanceVoltage && bmsModuleManager.getHighCellVolt() > bmsModuleManager.getLowCellVolt() + settings.balanceHyst) {
+      if (bmsModuleManager.getHighCellVolt() > (settings.balanceVoltage / 1000) && bmsModuleManager.getHighCellVolt() > bmsModuleManager.getLowCellVolt() + (settings.balanceHyst / 1000)) {
         balanceCells = true;
       } else {
         balanceCells = false;
@@ -100,7 +102,7 @@ void Bms::updateStatus() {
     case Precharge:
       if (io.isChargeEnabled() && contactorsClosed()) {
         status = Charge;
-      } else if (io.isDriveEnabled() && contactorsClosed()) {
+      } else if (io.isDriveEnabled(inverterInForwardReverse) && contactorsClosed()) {
         status = Drive;
       }
       break;
@@ -110,7 +112,7 @@ void Bms::updateStatus() {
       if (!io.isChargeEnabled() || !contactorsClosed()) {
         status = Ready;
       }
-      if (bmsModuleManager.getHighCellVolt() > settings.balanceVoltage) {
+      if (bmsModuleManager.getHighCellVolt() > (settings.balanceVoltage/ 1000)) {
         balanceCells = true; 
       } else {
         balanceCells = false;
@@ -120,17 +122,18 @@ void Bms::updateStatus() {
       }
       break;
     case Error:
-      if (bmsModuleManager.getLowCellVolt() >= settings.underVSetpoint && cellspresent == settings.seriesCells) {
+      if (bmsModuleManager.getLowCellVolt() >= (settings.underVSetpoint/ 1000) && cellspresent == settings.seriesCells) {
         errorReason = "";
         status = Ready;
       }
+      balanceCells = false;
       break;
   }
 }
 
 void Bms::canRead(int canInterfaceOffset, int idOffset)
 {
-  
+
   if (bmscan.read(inMsg, canInterfaceOffset)) {
     //TODO::this can probably be better
     if (inMsg.id < 0x300)//do VW BMS magic if ids are ones identified to be modules
@@ -152,6 +155,13 @@ void Bms::canRead(int canInterfaceOffset, int idOffset)
       if (inMsg.id == 0x02) {
         inverterLastRec = millis();
         inverterStatus = inMsg.buf[0];
+      } else if (inMsg.id == 0x01) {
+        //CANIO in open inverter
+        if ((inMsg.buf[1] & 0x80) == 0x80 || (inMsg.buf[2] & 0x01) == 0x01) {
+          inverterInForwardReverse = true;
+        } else {
+          inverterInForwardReverse = false;
+        }
       }
     }
   }
@@ -159,48 +169,40 @@ void Bms::canRead(int canInterfaceOffset, int idOffset)
 }
 
 void Bms::broadcastStatus(const EEPROMSettings& settings) {
-      // msg.id  = 0x351;
-  // msg.len = 8;
+  msg.id  = 0x351;
+  msg.len = 8;
 
-  // msg.buf[0] = lowByte(uint16_t((settings.ChargeVsetpoint * settings.Scells ) * 10));
-  // msg.buf[1] = highByte(uint16_t((settings.ChargeVsetpoint * settings.Scells ) * 10));
-  // msg.buf[2] = lowByte(chargecurrent);
+  msg.buf[0] = lowByte(uint16_t((settings.chargeVsetpoint * settings.seriesCells ) * 10));
+  msg.buf[1] = highByte(uint16_t((settings.chargeVsetpoint * settings.seriesCells ) * 10));
+  // msg.buf[2] = lowByte(chargecurrent); workout limits
   // msg.buf[3] = highByte(chargecurrent);
-  // msg.buf[4] = lowByte(discurrent );
+  // msg.buf[4] = lowByte(discurrent);
   // msg.buf[5] = highByte(discurrent);
-  // msg.buf[6] = lowByte(uint16_t((settings.DischVsetpoint * settings.Scells) * 10));
-  // msg.buf[7] = highByte(uint16_t((settings.DischVsetpoint * settings.Scells) * 10));
+  msg.buf[6] = lowByte(uint16_t((settings.dischVsetpoint * settings.seriesCells) * 10));
+  msg.buf[7] = highByte(uint16_t((settings.dischVsetpoint * settings.seriesCells) * 10));
 
-  // bmscan.write(msg, settings.carCanIndex);
+  bmscan.write(msg, settings.carCanIndex);
 
+  int soc = shunt.getStateOfCharge(settings);
   msg.id  = 0x355;
   msg.len = 8;
-  // if (SOCoverride != -1) {
-  //   msg.buf[0] = lowByte(SOCoverride);
-  //   msg.buf[1] = highByte(SOCoverride);
-  //   msg.buf[2] = lowByte(SOH);
-  //   msg.buf[3] = highByte(SOH);
-  //   msg.buf[4] = lowByte(SOCoverride * 10);
-  //   msg.buf[5] = highByte(SOCoverride * 10);
-  // } else {
-  //   msg.buf[0] = lowByte(SOC);
-  //   msg.buf[1] = highByte(SOC);
-  //   msg.buf[2] = lowByte(SOH);
-  //   msg.buf[3] = highByte(SOH);
-  //   msg.buf[4] = lowByte(SOC * 10);
-  //   msg.buf[5] = highByte(SOC * 10);
-  // }
-
+  msg.buf[0] = lowByte(soc);
+  msg.buf[1] = highByte(soc);
+  msg.buf[2] = lowByte(50); //soh, no idea about this for the VW modules
+  msg.buf[3] = highByte(50);  //soh, no idea about this for the VW modules
+  msg.buf[4] = lowByte(soc * 10);
+  msg.buf[5] = highByte(soc * 10);
   msg.buf[6] = lowByte(status);
   msg.buf[7] = highByte(status);
   bmscan.write(msg, settings.carCanIndex);
 
+  ShuntData data = shunt.getData();
   msg.id  = 0x356;
   msg.len = 8;
   msg.buf[0] = lowByte(uint16_t(bmsModuleManager.getPackVoltage() * 100));
   msg.buf[1] = highByte(uint16_t(bmsModuleManager.getPackVoltage() * 100));
-  // msg.buf[2] = lowByte(long(currentact / 100)); Acutal current
-  // msg.buf[3] = highByte(long(currentact / 100));
+  msg.buf[2] = lowByte(long(data.milliamps / 100));
+  msg.buf[3] = highByte(long(data.milliamps / 100));
   msg.buf[4] = lowByte(int16_t(bmsModuleManager.getAvgTemperature() * 10));
   msg.buf[5] = highByte(int16_t(bmsModuleManager.getAvgTemperature() * 10));
   msg.buf[6] = lowByte(uint16_t(bmsModuleManager.getAvgCellVolt() * 1000));
@@ -250,6 +252,11 @@ IO& Bms::getIO() {
   return io;
 }
 
+Shunt& Bms::getShunt() {
+  return shunt;
+}
+
+
 byte Bms::getStatus() {
   return status;
 }
@@ -264,11 +271,11 @@ bool Bms::contactorsClosed() {
 
 void Bms::updateAlarms(const EEPROMSettings& settings) {
   Bms::alarm[0] = 0x00;
-  if (settings.overVSetpoint < bmsModuleManager.getHighCellVolt())
+  if ((settings.overVSetpoint / 1000) < bmsModuleManager.getHighCellVolt())
   {
     Bms::alarm[0] = 0x04;
   }
-  if (bmsModuleManager.getLowCellVolt() < settings.underVSetpoint)
+  if (bmsModuleManager.getLowCellVolt() < (settings.underVSetpoint/ 1000))
   {
     Bms::alarm[0] |= 0x10;
   }
@@ -290,11 +297,11 @@ void Bms::updateAlarms(const EEPROMSettings& settings) {
   ///warnings///
   Bms::warning[0] = 0;
 
-  if (bmsModuleManager.getHighCellVolt() > (settings.overVSetpoint - settings.warnOffset))
+  if (bmsModuleManager.getHighCellVolt() > ((settings.overVSetpoint / 1000) - settings.warnOffset))
   {
     Bms::warning[0] = 0x04;
   }
-  if (bmsModuleManager.getLowCellVolt() < (settings.underVSetpoint + settings.warnOffset))
+  if (bmsModuleManager.getLowCellVolt() < ((settings.underVSetpoint / 1000) + settings.warnOffset))
   {
     Bms::warning[0] |= 0x10;
   }
@@ -308,6 +315,10 @@ void Bms::updateAlarms(const EEPROMSettings& settings) {
   {
     Bms::warning[1] = 0x01;
   }
+}
+
+bool Bms::getBalanceCells() {
+  return balanceCells;
 }
 
 void Bms::printSummary() {
