@@ -1,6 +1,6 @@
 #ifndef BMS_MODULE_H
 #define BMS_MODULE_H
-#include "BMSCan.h"
+#include "BmsCan.h"
 
 class BMSModule
 {
