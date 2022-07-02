@@ -75,7 +75,7 @@ void BMSWebServer::setup(EEPROMSettings &settings, Config &config, Bms &bms)
         json["chargeEnabled"] = io.isChargeEnabled();
         json["chargeOverride"] = io.getChargeOverride();
         json["ahUsed"] = data.amphours;
-        json["soc"] = bms.getShunt().getStateOfCharge(settings);
+        json["soc"] = bms.getShunt().getStateOfCharge();
         json["balanceActive"] = bms.getBalanceCells();
         json["test"] = (settings.balanceVoltage / 1000);
         byte status = bms.getStatus();

@@ -1,5 +1,6 @@
 #include "BmsCan.h"
 
+
 ACAN2515* can1;
 ACAN2515* can2;
 bool started[] = {false, false, false};
@@ -59,13 +60,14 @@ void BmsCan::begin(uint32_t baud, int interfaceIndex) {
     ACAN2515Settings settings(16 * 1000 * 1000, baud);
     uint16_t errorCode = can1->begin(settings, [] { can1->isr () ; });
     if (errorCode > 0) {
-      Serial.print ("Can2 Configuration error 0x") ;
+      Serial.print ("Can1 Configuration error 0x") ;
       Serial.println (errorCode, HEX) ;
     }
     started[interfaceIndex] = true;
 
   } else if (interfaceIndex == 2 && !started[interfaceIndex]) {
     Serial.println("Can2 Start") ;
+    pinMode(MCP2515_CS_2, OUTPUT); //HSPI SS
     SPI2.begin(MCP2515_SCK_2, MCP2515_SO_2, MCP2515_SI_2, MCP2515_CS_2);
     can2 = new ACAN2515 (MCP2515_CS_2, SPI2, MCP2515_INT_2) ;
     ACAN2515Settings settings(16 * 1000 * 1000, baud);
@@ -88,6 +90,8 @@ int BmsCan::write(const BMS_CAN_MESSAGE &msg, int interfaceIndex) {
     bool response = can1->tryToSend(toSend);
   } else if (interfaceIndex == 2 && can2 != NULL) {
     bool response = can2->tryToSend(toSend);
+    Serial.print("try to Send ");
+    Serial.println(response);
   }
   return 0;
 }

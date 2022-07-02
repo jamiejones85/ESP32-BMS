@@ -1,11 +1,18 @@
 #ifndef BMS_MODULE_H
 #define BMS_MODULE_H
-#include "BMSCan.h"
+#define MAX_MODULE_ADDR     0x3E
+
+#include "BmsCanMessage.h"
+#include "ISerial.h"
+#include "IMillis.h"
 
 class BMSModule
 {
   public:
     BMSModule();
+    void setSerial(ISerial *s);
+    void setMillis(IMillis *m);
+
     void decodecan(int Id, BMS_CAN_MESSAGE &msg);
     void decodetemp(BMS_CAN_MESSAGE &msg);
     void clearmodule();
@@ -66,6 +73,9 @@ class BMSModule
     uint32_t lasterror;
     uint8_t cmuerror;
     uint32_t timeout;
+
+    ISerial *serial;
+    IMillis *millis;
 
 };
 #endif

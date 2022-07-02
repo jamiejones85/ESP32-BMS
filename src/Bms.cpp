@@ -4,6 +4,9 @@
 #include "OutlanderCharger.h"
 #include "Shunt.h"
 
+#define CAN_ID_OFFSET_SECOND_PACK 32
+
+
 BmsCan bmscan;
 BMS_CAN_MESSAGE msg;
 BMS_CAN_MESSAGE inMsg;
@@ -35,6 +38,10 @@ void Bms::execute() {
 
     if (settings.carCanIndex > 0) {
       Bms::canRead(1, 0);
+    }
+
+    if (settings.secondBatteryCanIndex > 0) {
+      Bms::canRead(1, CAN_ID_OFFSET_SECOND_PACK);
     }
     
 
@@ -123,6 +130,7 @@ void Bms::updateStatus() {
       }
       if (outlanderCharger.isDoneCharging(settings, bmsModuleManager)) {
         status = Ready;
+        shunt.resetCounters(msg);
       }
       break;
     case Error:
@@ -187,7 +195,7 @@ void Bms::broadcastStatus(const EEPROMSettings& settings) {
 
   bmscan.write(msg, settings.carCanIndex);
 
-  int soc = shunt.getStateOfCharge(settings);
+  int soc = shunt.getStateOfCharge();
   msg.id  = 0x355;
   msg.len = 8;
   msg.buf[0] = lowByte(soc);

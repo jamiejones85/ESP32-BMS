@@ -1,4 +1,4 @@
-#include "config.h"
+#include "Config.h"
 #include "BMSModuleManager.h"
 
 BMSModuleManager::BMSModuleManager()
@@ -822,6 +822,8 @@ void BMSModuleManager::sendCommand(BMS_CAN_MESSAGE &msg, BmsCan &bmscan) {
   msg.buf[6] = 0x00;
   msg.buf[7] = 0x30;
   bmscan.write(msg, 0);
+    bmscan.write(msg, 2);
+
 }
 
 void BMSModuleManager::printPackDetailsJson(DynamicJsonDocument &root)

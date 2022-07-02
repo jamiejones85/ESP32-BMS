@@ -1,5 +1,4 @@
 #include "BMSModule.h"
-#include "Config.h"
 
 BMSModule::BMSModule()
 {
@@ -126,19 +125,21 @@ void BMSModule::decodecan(int Id, BMS_CAN_MESSAGE &msg)
 
   if (cmuerror == 0)
   {
-    lasterror = millis();
+    lasterror = millis->millis();
   }
   else
   {
-    if (millis() - lasterror < timeout)
+    if (millis->millis() - lasterror < timeout)
     {
-      if (lasterror + timeout - millis() < 5000)
+      if (lasterror + timeout - millis->millis() < 5000)
       {
-        Serial.println("  ");
-        Serial.print("Module");
-        Serial.print(moduleAddress);
-        Serial.print("Counter Till Can Error : ");
-        Serial.println(lasterror + timeout - millis() );
+        if (serial != nullptr) {
+          serial->println("  ");
+          serial->print("Module");
+          serial->print(moduleAddress);
+          serial->print("Counter Till Can Error : ");
+          serial->println((uint32_t)(lasterror + timeout - millis->millis()));
+        }
       }
     }
     else
@@ -418,9 +419,19 @@ void BMSModule::setReset(bool ex)
 void BMSModule::setIgnoreCell(float Ignore)
 {
   IgnoreCell = Ignore;
-  Serial.println();
-  Serial.println();
-  Serial.println(Ignore);
-  Serial.println();
+  if (serial != nullptr) {
+    serial->println();
+    serial->println();
+    serial->println(Ignore);
+    serial->println();
+  }
 
+}
+
+void BMSModule::setSerial(ISerial *s) {
+  serial = s;
+}
+
+void BMSModule::setMillis(IMillis *m) {
+  millis = m;
 }

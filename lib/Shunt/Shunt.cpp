@@ -1,15 +1,29 @@
 #include "Shunt.h"
-#include "Arduino.h"
 
-int Shunt::getStateOfCharge(const EEPROMSettings &settings) {
-  return ((settings.useableAh - data.amphours) / (settings.useableAh) ) * 100;
+Shunt::Shunt(IBmsCan *bms, EEPROMSettings *s) {
+   bmsCanRef = bms;
+   settings = s;
+}
+
+Shunt::Shunt() {
+}
+
+void Shunt::setSettings(EEPROMSettings *s) {
+   this->settings = s;
+}
+void Shunt::setBmsCan(IBmsCan *can) {
+  this->bmsCanRef = can;
+}
+
+int Shunt::getStateOfCharge() {
+  return ((settings->useableAh - data.amphours) / (settings->useableAh) ) * 100;
 }
 
 ShuntData Shunt::getData() {
     return data;
 }
 
-void Shunt::resetCounters(BMS_CAN_MESSAGE &msg, BmsCan &bmscan, const EEPROMSettings &settings) {
+void Shunt::resetCounters(BMS_CAN_MESSAGE &msg) {
   msg.id  = 0x411;
   msg.len = 8;
   msg.buf[0] = 0x3F;
@@ -20,7 +34,7 @@ void Shunt::resetCounters(BMS_CAN_MESSAGE &msg, BmsCan &bmscan, const EEPROMSett
   msg.buf[5] = 0x00;
   msg.buf[6] = 0x00;
   msg.buf[7] = 0x00;
-  bmscan.write(msg, settings.carCanIndex);
+  bmsCanRef->write(msg, settings->carCanIndex);
 }
 
 void Shunt::process(BMS_CAN_MESSAGE &inMsg) {
@@ -34,8 +48,7 @@ void Shunt::process(BMS_CAN_MESSAGE &inMsg) {
      } else if (inMsg.id == 0x523) {
         data.voltage2 = inMsg.buf[2] + (inMsg.buf[3] << 8) + (inMsg.buf[4] << 16) + (inMsg.buf[5] << 24);
      } else if (inMsg.id == 0x526) {
-        long watt = inMsg.buf[2] + (inMsg.buf[3] << 8) + (inMsg.buf[4] << 16) + (inMsg.buf[5] << 24);
-        data.kilowatts = watt/1000.0f;
+        data.watts = inMsg.buf[2] + (inMsg.buf[3] << 8) + (inMsg.buf[4] << 16) + (inMsg.buf[5] << 24);
      } else if (inMsg.id == 0x527) {
         long ampseconds = inMsg.buf[2] + (inMsg.buf[3] << 8) + (inMsg.buf[4] << 16) + (inMsg.buf[5] << 24);
         data.amphours = ampseconds/3600.0f;

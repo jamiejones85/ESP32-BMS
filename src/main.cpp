@@ -14,6 +14,7 @@
 #include <Ticker.h>
 #include <Update.h>
 #include <ArduinoOTA.h>
+#include <Arduino.h>
 
 
 #define WDT_TIMEOUT 3
@@ -23,7 +24,6 @@ int moduleidstart = 0x1CC;
 
 Bms bms;
 BMSWebServer bmsWebServer;
-
 EEPROMSettings settings;
 Config config;
 
@@ -35,17 +35,19 @@ void ms1000Callback();
 void ms500Callback();
 Task ms500Task(500, TASK_FOREVER, &ms500Callback);
 Task ms1000Task(1000, TASK_FOREVER, &ms1000Callback);
-Ticker sta_tick(staCheck, 5000, 0, MICROS);
+// Ticker sta_tick(staCheck, 5000, 0, MICROS);
 
-void staCheck(){
-  sta_tick.stop();
+// void staCheck(){
+//   sta_tick.stop();
 
-  if(!(uint32_t)WiFi.localIP()){
-    WiFi.mode(WIFI_AP); //disable station mode
-  }
-}
+//   if(!(uint32_t)WiFi.localIP()){
+//     WiFi.mode(WIFI_AP); //disable station mode
+//   }
+// }
 
 void setup(){
+  pinMode(MCP2515_CS, OUTPUT);
+  digitalWrite(MCP2515_CS, true);
   EEPROM.begin(EEPROM_SIZE);
   // Serial port for debugging purposes
   Serial.begin(115200);
@@ -61,7 +63,7 @@ void setup(){
   WiFi.hostname(HOSTNAME);
   // Connect to Wi-Fi
   WiFi.begin();
-  sta_tick.start();
+  // sta_tick.start();
 
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
       //make sure the dog is kicked
@@ -99,7 +101,7 @@ void ms500Callback() {
 
 void loop(){
   ArduinoOTA.handle();
-  sta_tick.update();
+  // sta_tick.update();
   ts.execute();
   bmsWebServer.execute();
   bms.execute();

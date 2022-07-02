@@ -3,12 +3,10 @@
 bool OutlanderCharger::isDoneCharging(EEPROMSettings &settings, BMSModuleManager& bmsModuleManager) {
     //if any cell goes over the set point, we are full
     if (bmsModuleManager.getHighCellVolt() > settings.chargeVsetpoint) {
-        request_current = true;
+        return true;
     }
 
-    //if current reaches the lowpoint setpoint, we are full
-
-    false;
+    return false;
 }
 void OutlanderCharger::processMessage(BMS_CAN_MESSAGE &inMsg) {
     if (inMsg.id == 0x389) {
@@ -75,6 +73,10 @@ int OutlanderCharger::calculateCurrent(const EEPROMSettings &settings, BMSModule
     if (bmsModuleManager.getHighCellVolt() > settings.overVSetpoint)
     {
       chargecurrent = 0;
+    }
+
+    if (reported_voltage > (settings.chargeTSetpoint * settings.seriesCells)) {
+        chargecurrent = 0;
     }
 
     //Modifying Charge current///
