@@ -3,9 +3,7 @@
 #include "ESPAsyncWebServer.h"
 #include "SPIFFS.h"
 #include "Bms.h"
-
 #include "BMSWebServer.h"
-
 #include "Config.h"
 #include <TaskScheduler.h>
 #include <SPI.h>
@@ -15,8 +13,6 @@
 #include <Update.h>
 #include <ArduinoOTA.h>
 #include <Arduino.h>
-
-
 #define WDT_TIMEOUT 3
 #define EEPROM_SIZE 512
 #define HOSTNAME "ESP32-BMS"

@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 #define EEPROM_VERSION      0x03   //update any time EEPROM struct below is changed.
-#include "ArduinoJson.h"
+#include <ArduinoJson.h>
 #include "EepromSettings.h"
 
 class Config
