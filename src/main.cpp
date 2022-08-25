@@ -42,8 +42,8 @@ Task ms1000Task(1000, TASK_FOREVER, &ms1000Callback);
 // }
 
 void setup(){
-  pinMode(MCP2515_CS, OUTPUT);
-  digitalWrite(MCP2515_CS, true);
+  //pinMode(MCP2515_CS, OUTPUT);
+  //digitalWrite(MCP2515_CS, true);
   EEPROM.begin(EEPROM_SIZE);
   // Serial port for debugging purposes
   Serial.begin(115200);
