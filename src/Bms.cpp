@@ -3,6 +3,7 @@
 #include "BMSModuleManager.h"
 #include "OutlanderCharger.h"
 #include "Shunt.h"
+#include <SPI.h>
 
 #define CAN_ID_OFFSET_SECOND_PACK 32
 
@@ -19,9 +20,13 @@ Bms::Bms() {
   status = Boot;
 }
 
+//uninitalised pointers to SPI objects
+SPIClass * vspi = NULL;
+
 void Bms::setup(const EEPROMSettings& settings) {
   io.setup();
-  SPI.begin();
+  vspi = new SPIClass(VSPI);
+  //VSPI.begin();
   this->settings = settings;
 
   //only supports 1 pack at the moment
@@ -30,7 +35,7 @@ void Bms::setup(const EEPROMSettings& settings) {
 
   bmscan.begin(500000, 0);
   bmscan.begin(500000, 1);
-  bmscan.begin(500000, 2);
+  //bmscan.begin(500000, 2);
 }
 
 void Bms::execute() {
