@@ -2,7 +2,7 @@
 #include "WiFi.h"
 #include "ESPAsyncWebServer.h"
 #include "SPIFFS.h"
-#include "Bms.h"
+#include "BMS.h"
 
 #include "BMSWebServer.h"
 

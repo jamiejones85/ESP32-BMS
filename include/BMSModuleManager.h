@@ -3,7 +3,7 @@
 
 #define CONTROLID 0x0BA;
 
-#include "config.h"
+#include "Config.h"
 #include "BMSModule.h"
 #include "BMSCan.h"
 #include "ArduinoJson.h"
