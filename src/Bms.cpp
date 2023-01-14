@@ -27,7 +27,6 @@ void Bms::setup(const EEPROMSettings& settings) {
 
   bmscan.begin(500000, 0);
   bmscan.begin(500000, 1);
-  bmscan.begin(500000, 2);
 }
 
 void Bms::execute() {
