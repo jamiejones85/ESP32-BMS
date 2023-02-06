@@ -10,11 +10,9 @@ static const byte MCP2515_SO  = GPIO_NUM_19 ; // SO output of MCP2515
 static const byte MCP2515_CS  = GPIO_NUM_5 ; // CS input of MCP2515
 static const byte MCP2515_INT = GPIO_NUM_27 ; // INT output of MCP2515
 
-static const byte MCP2515_SCK_2 = GPIO_NUM_25 ; // SCK input of MCP2515
-static const byte MCP2515_SI_2  = GPIO_NUM_32 ; // SI input of MCP2515
-static const byte MCP2515_SO_2  = GPIO_NUM_33 ; // SO output of MCP2515
-static const byte MCP2515_CS_2  = GPIO_NUM_26 ; // CS input of MCP2515
-static const byte MCP2515_INT_2 = GPIO_NUM_13 ; // INT output of MCP2515
+// Future add optional using sda/scl pins for 3rd interface on spi 
+//static const byte MCP2515_CS_2  = GPIO_NUM_21 ; // CS input of MCP2515
+//static const byte MCP2515_INT_2 = GPIO_NUM_22 ; // INT output of MCP2515
 
 typedef struct BMS_CAN_MESSAGE {
     uint32_t id;
