@@ -5,11 +5,14 @@ Enclosure: https://www.aliexpress.com/item/33013295705.html
 
 ## Completed
 - Cell Voltage Monitoring
+
+## Unverified
 - Cell Temperature Monitoring
 - Average Temperature / Voltages
 - Min Max Voltages / Temperatures
 - Watch Dog
 - Wifi Connection Settings
+- Module stopping reporting
 
 ## Uncompleted
 

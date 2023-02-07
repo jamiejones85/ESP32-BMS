@@ -2,7 +2,7 @@
 #include "WiFi.h"
 #include "ESPAsyncWebServer.h"
 #include "SPIFFS.h"
-#include "BMS.h"
+#include "Bms.h"
 
 #include "BMSWebServer.h"
 
@@ -49,10 +49,13 @@ void setup(){
   }
 
   //AP and Station Mode
-  WiFi.mode(WIFI_AP_STA);
+  WiFi.mode(WIFI_STA);
   WiFi.hostname(HOSTNAME);
   // Connect to Wi-Fi
   WiFi.begin();
+
+
+    Serial.println(WiFi.localIP());
 
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
       //make sure the dog is kicked
@@ -79,8 +82,6 @@ void setup(){
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
   Serial.println("Setup Done");
-
-
 }
 
 //Execute every 1 seconds

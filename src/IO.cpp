@@ -18,7 +18,7 @@ bool IO::getChargeOverride() {
 bool IO::isChargeEnabled() {
 
   int averageValue = 0;
-  float ppVoltage =0 ;
+  float ppVoltage = 0 ;
   int measurementsToAverage = 16;
   for(int i = 0; i < measurementsToAverage; ++i)
   {

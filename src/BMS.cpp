@@ -42,7 +42,7 @@ void Bms::execute() {
       inverterInForwardReverse = false;
     }
 
-    if (cellspresent != bmsModuleManager.seriescells())
+    if (cellspresent != settings.seriesCells)
       {
         status = Error;
         errorReason = "Serial Cell Count Error";
@@ -64,9 +64,7 @@ void Bms::ms1000Task() {
 
 void Bms::ms500Task(const EEPROMSettings& settings) {
     bmsModuleManager.sendCommand(msg, bmscan);
-    if (cellspresent == 0) {
-          cellspresent = bmsModuleManager.seriescells();
-    }
+    cellspresent = bmsModuleManager.seriescells();
 
     bmsModuleManager.getAllVoltTemp();
     if (balanceCells == true)
@@ -134,13 +132,13 @@ void Bms::updateStatus() {
   }
 }
 
-void Bms::canRead(int canInterfaceOffset, int idOffset)
+void Bms::canRead(int canInterfaceOffset, int idOffset)//idoffset no longer needed, remove
 {
 
   if (bmscan.read(inMsg, canInterfaceOffset)) {
     //TODO::this can probably be better
     if (inMsg.id < 0x300)//do VW BMS magic if ids are ones identified to be modules
-    {
+    { 
         inMsg.id = inMsg.id + idOffset;
         bmsModuleManager.decodecan(inMsg, 0); //do VW BMS if ids are ones identified to be modules
     }
