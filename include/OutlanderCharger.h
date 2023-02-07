@@ -1,7 +1,7 @@
 #ifndef OUTLANDER_CHARGER_H
 #define OUTLANDER_CHARGER_H
 #include <Arduino.h>
-#include "BmsCan.h"
+#include "BMSCan.h"
 #include "Config.h"
 #include "BMSModuleManager.h"
 

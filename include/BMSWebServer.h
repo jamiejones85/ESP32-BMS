@@ -4,7 +4,7 @@
 #include "AsyncJson.h"
 #include "ArduinoJson.h"
 #include "Config.h"
-#include "Bms.h"
+#include "BMS.h"
 
 class BMSWebServer
 {

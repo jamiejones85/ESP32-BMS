@@ -1,6 +1,6 @@
 #ifndef Shunt_H
 #define Shunt_H
-#include "BmsCan.h"
+#include "BMSCan.h"
 #include "Config.h"
 
 typedef struct ShuntData {
