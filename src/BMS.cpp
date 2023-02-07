@@ -358,11 +358,6 @@ void Bms::printSummary() {
   if (io.isChargeEnabled()) {
     Serial.print("| AC Present");
   }
-  Serial.print("  ");
-  Serial.print("  ");
-  Serial.print(io.ChargeADC());
-  Serial.print("  ");
-  Serial.print("  ");
   
   if (balanceCells == true)
   {

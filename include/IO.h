@@ -11,7 +11,6 @@
 // Input 4 (GPIO 35) is a digital pin and is to be used as the alternative chrge in pin, where high is pluged in
 
 #define CHARGE_IN 36
-#define CHARGE_IN_ALT 35
 #define DRIVE_IN 34
 
 class IO
@@ -19,7 +18,6 @@ class IO
   public:
     void setup();
     bool isChargeEnabled();
-    double ChargeADC();
     bool isDriveEnabled(bool inverterInForwardReverse);
     void setChargeOverride(bool override);
     bool getChargeOverride();

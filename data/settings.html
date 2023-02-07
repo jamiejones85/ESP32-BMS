@@ -79,23 +79,16 @@
 			<label>Charge Current Max<input name="chargecurrentmax" type="number"  min="1"/>A</label>
 		</div>
 		<h2>Input/Outputs</h2>
-		<label>AC Detection Method</label>
+		<label>AC Detection Method [Not Implemented Yet, Hardcoded J1772 Only</label>
 		<select name="AC_Detection" id="AC_Present">
 			<option value="J1772">A1_J1772</option>
 			<option value="IEC61851">A1_IEC_61851</option>
-			<option value="D1H">D1 High</option>
-			<option value="D1L">D1 Low</option>
-			<option value="D2H">D2 High</option>
-			<option value="D2L">D2 Low</option>
 		  </select>
-		<label>Contactor Closed Detection (HV Available)</label>
+		<label>Contactor Closed Detection (HV Available) [Not Implemented D2_High or Hardcoded Canbus Currently]</label>
 		  	<select name="HV_Available" id="HV_Available" onchange="ChangeHV()">
-			  <option value="A1">A1_Voltage_Divider</option>
 			  <option value="A2">A2_Voltage_Divider</option>
-			  <option value="D1H">D1 High</option>
-			  <option value="D1L">D1 Low</option>
-			  <option value="D2H">D2 High</option>
-			  <option value="D2L">D2 Low</option>
+			  <option value="D2H">D2_High</option>
+			  <option value="D2L">D2_Low</option>
 			  <option value="CAN">CanBus</option>
 			</select>
 		var 
