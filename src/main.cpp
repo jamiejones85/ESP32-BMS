@@ -54,8 +54,7 @@ void setup(){
   // Connect to Wi-Fi
   WiFi.begin();
 
-
-    Serial.println(WiFi.localIP());
+  Serial.println(WiFi.localIP());
 
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
       //make sure the dog is kicked

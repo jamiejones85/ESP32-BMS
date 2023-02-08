@@ -17,7 +17,7 @@ Bms::Bms() {
 }
 
 void Bms::setup(const EEPROMSettings& settings) {
-  io.setup();
+  io.setup(settings);
   SPI.begin();
   this->settings = settings;
 

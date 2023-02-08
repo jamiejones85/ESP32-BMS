@@ -48,6 +48,10 @@ EEPROMSettings Config::loadDefaults() {
     settings.parallelStrings = 1;
     settings.balanceVoltage = 3900;
     settings.balanceHyst = 40;
+
+    settings.acDetectionMethod = AC_METHOD_J1772;
+    settings.hvPresentMethod = HV_PRESENT_A2_ANALOG;
+
     return settings;
 }
 
@@ -76,6 +80,9 @@ EEPROMSettings Config::fromJson(JsonObject &doc) {
     settings.balanceHyst = doc["balanceHyst"];
     settings.parallelStrings = doc["parallelStrings"]; //remove and use second pack can index
 
+    settings.hvPresentMethod = doc["hvPresentMethod"];
+    settings.acDetectionMethod = doc["acDetectionMethod"];
+
 
     return settings;
 }
@@ -101,5 +108,8 @@ void Config::toJson(const EEPROMSettings& settings, DynamicJsonDocument &root) {
     root["balanceVoltage"] = settings.balanceVoltage;
     root["balanceHyst"] = settings.balanceHyst;
     root["parallelStrings"] = settings.parallelStrings;
+
+    root["hvPresentMethod"] = settings.hvPresentMethod;
+    root["acDetectionMethod"] = settings.acDetectionMethod;
 
 }

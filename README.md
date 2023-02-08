@@ -13,17 +13,17 @@ Enclosure: https://www.aliexpress.com/item/33013295705.html
 - Watch Dog
 - Wifi Connection Settings
 - Module stopping reporting
+- Temperature Ratings for Charginging
+- Current Limits for Charging
+- Charge Using Outlander Charger
 
 ## Uncompleted
 
-- Temperature Ratings for Charginging
 - Balancing
-- Current Limits for Charging
-- Charge Using Outlander Charger
 - SOC from ISA Shunt
 - Voltage Warnings
 - Voltage Alert
-- Secondary Pack
+- Secondary Pack (Using canbrige)
 - Web Interface for Config of Voltage warnings, alarms, temperatures etc
 - Web Interface for Running
 - Timeout of interter status

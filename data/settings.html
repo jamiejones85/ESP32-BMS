@@ -78,23 +78,24 @@
 		<h2>Input/Outputs</h2>
 		<div>
 			<label>AC Detection Method [Not Implemented Yet, Hardcoded J1772 Only</label>
-			<select name="AC_Detection" id="AC_Present">
-				<option value="J1772">A1_J1772</option>
-				<option value="IEC61851">A1_IEC_61851</option>
+			<select name="acDetection" id="AC_Present">
+				<option value="0">A1_J1772</option>
+				<option value="1">A1_IEC_61851</option>
+				<option value="2">D1 High</option>
+				<option value="3">D2 Low</option>
 			</select>
 		</div>
 		<div>
 			<label>Contactor Closed Detection (HV Available) [Not Implemented D2_High or Hardcoded Canbus Currently]</label>
-				<select name="HV_Available" id="HV_Available" onchange="ChangeHV()">
-				<option value="A2">A2_Voltage_Divider</option>
-				<option value="D2H">D2_High</option>
-				<option value="D2L">D2_Low</option>
-				<option value="CAN">CanBus</option>
+				<select name="hvPresentMethod" id="HV_Available">
+				<option value="0">A2_Voltage_Divider</option>
+				<option value="1">D2_High</option>
+				<option value="2">D2_Low</option>
+				<option value="3">CanBus</option>
 				</select>
-			var 
-			<div>
-				<button type='submit' onclick="save()">Save</button>
-			</div>
+		</div>
+		<div>
+			<button type='submit' onclick="save()">Save</button>
 		</div>
 	</form>
 </div>
