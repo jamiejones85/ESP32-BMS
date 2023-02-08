@@ -22,6 +22,7 @@ bool IO::isChargeEnabled() {
         return true;
     }
     if (settings.acDetectionMethod == AC_METHOD_J1772) {
+        //TODO: move to a private method
         int averageValue = 0;
         float ppVoltage = 0 ;
         int measurementsToAverage = 16;
