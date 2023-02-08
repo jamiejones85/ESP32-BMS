@@ -20,6 +20,7 @@ class OutlanderCharger {
   private:
     int timeout = 0;
     int calculateCurrent(const EEPROMSettings &settings, BMSModuleManager& bmsModuleManage);
+    int chargeAmps = 0;
 };
 
 #endif

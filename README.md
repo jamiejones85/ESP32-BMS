@@ -17,6 +17,7 @@ Enclosure: https://www.aliexpress.com/item/33013295705.html
 ## Uncompleted
 
 - Temperature Ratings for Charginging
+- Balancing
 - Current Limits for Charging
 - Charge Using Outlander Charger
 - SOC from ISA Shunt

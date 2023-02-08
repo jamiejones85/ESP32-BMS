@@ -1,14 +1,7 @@
 #include "OutlanderCharger.h"
 
 bool OutlanderCharger::isDoneCharging(EEPROMSettings &settings, BMSModuleManager& bmsModuleManager) {
-    //if any cell goes over the set point, we are full
-    if (bmsModuleManager.getHighCellVolt() > settings.chargeVsetpoint) {
-        request_current = true;
-    }
-
-    //if current reaches the lowpoint setpoint, we are full
-
-    false;
+    return chargeAmps == 0;
 }
 void OutlanderCharger::processMessage(BMS_CAN_MESSAGE &inMsg) {
     if (inMsg.id == 0x389) {
@@ -25,7 +18,7 @@ void OutlanderCharger::processMessage(BMS_CAN_MESSAGE &inMsg) {
 }
 
 void OutlanderCharger::doCharge(const EEPROMSettings &settings, BMSModuleManager& bmsModuleManager, BMS_CAN_MESSAGE &msg, BmsCan &bmscan) {
-    int chargeAmps = calculateCurrent(settings, bmsModuleManager);
+    chargeAmps = calculateCurrent(settings, bmsModuleManager);
     if (chargeAmps > 0) {
 
         msg.id = 0x285;
@@ -59,6 +52,7 @@ int OutlanderCharger::calculateCurrent(const EEPROMSettings &settings, BMSModule
     float chargeHyVolts = settings.chargeHys / 1000;
     float chargeVsetpoint = settings.chargeVsetpoint / 1000;
 
+
       ///////All hard limits to into zeros
     if (bmsModuleManager.getLowTemperature() < settings.underTSetpoint)
     {
@@ -85,6 +79,7 @@ int OutlanderCharger::calculateCurrent(const EEPROMSettings &settings, BMSModule
         chargecurrent = chargecurrent - map(bmsModuleManager.getLowTemperature(), settings.underTSetpoint, settings.chargeTSetpoint, (settings.chargecurrentmax), 0);
       }
 
+      //taper based on highest cell, matching how it's done in simpBMS for now.
       if (bmsModuleManager.getHighCellVolt() > (chargeVsetpoint - chargeHyVolts)) {
         chargecurrent = chargecurrent - map(bmsModuleManager.getHighCellVolt(), (chargeVsetpoint - chargeHyVolts), chargeVsetpoint, 0, (settings.chargecurrentmax - settings.chargeCurrentEnd));
       }
@@ -94,6 +89,7 @@ int OutlanderCharger::calculateCurrent(const EEPROMSettings &settings, BMSModule
     if (chargecurrent < 0) {
         chargecurrent = 0;
     }
+    
 
     Serial.print("Charge Current: ");
     Serial.println(chargecurrent);

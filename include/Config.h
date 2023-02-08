@@ -9,11 +9,13 @@ typedef struct EEPROMSettings {
   int version;
   //can settings
   int carCanIndex;
-  int firstBatteryCanIndex;
-  int secondBatteryCanIndex;
+  int batteryCanIndex;
+  
   //battery pack settings
   int seriesCells;
   int useableAh;
+  int parallelStrings;
+  
   //voltages
   int overVSetpoint;
   int underVSetpoint;
@@ -21,19 +23,20 @@ typedef struct EEPROMSettings {
   int dischVsetpoint;
   int cellGapAlarm; //milivolt difference in min and max to raise alarm
   int warnOffset; //How close to min and max voltages to warn
+  
   //temperatures
   int overTSetpoint;
   int underTSetpoint;
   int chargeTSetpoint;
   int disTSetpoint;
   int warnTempOffset; //How close to min and max temperatures to warn
+  
   //charging
   int chargecurrentmax;
-  int chargerTempDeRate;
+  int chargerTempDeRate; //bring down the amps when the charger over this
   int chargeHys;
-  int chargeCurrentEnd;
+  int chargeCurrentEnd; //When current tapers down to this value, we're full
 
-  int parallelStrings;
 
   float balanceVoltage;
   float balanceHyst;
