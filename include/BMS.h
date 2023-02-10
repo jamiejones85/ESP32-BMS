@@ -18,10 +18,10 @@
 
 class Bms {
   public:
-    Bms();
-    void setup(const EEPROMSettings& settings);
+    Bms(EEPROMSettings& settings);
+    void setup();
     void execute();
-    void ms500Task(const EEPROMSettings& settings);
+    void ms500Task();
     void ms1000Task();
     void canRead(int canInterfaceOffset, int idOffset);
     void printSummary();
@@ -35,10 +35,11 @@ class Bms {
     bool getBalanceCells();
 
   private:
-    EEPROMSettings settings;
+    EEPROMSettings& settings;
     byte status;
     BMSModuleManager bmsModuleManager;
     OutlanderCharger outlanderCharger;
+    Shunt shunt;
     IO io;
     unsigned char alarm[4];
     unsigned char warning[4];
@@ -46,8 +47,8 @@ class Bms {
     byte inverterStatus;
     bool inverterInForwardReverse;
     bool balanceCells;
-    void broadcastStatus(const EEPROMSettings& settings);
-    void updateAlarms(const EEPROMSettings& settings);
+    void broadcastStatus();
+    void updateAlarms();
     void updateStatus();
 
 };

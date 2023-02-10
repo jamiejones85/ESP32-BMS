@@ -7,19 +7,19 @@
 BmsCan bmscan;
 BMS_CAN_MESSAGE msg;
 BMS_CAN_MESSAGE inMsg;
-Shunt shunt;
 int cellspresent = 0;
 String errorReason;
 
-Bms::Bms() {
+Bms::Bms(EEPROMSettings& s)
+  : settings { s }, shunt { Shunt(s) }, io { IO(s) }, 
+    outlanderCharger { OutlanderCharger(s, bmsModuleManager, bmscan) } {
   Serial.println("BMS instansiated");
   status = Boot;
 }
 
-void Bms::setup(const EEPROMSettings& settings) {
-  io.setup(settings);
+void Bms::setup() {
+  io.setup();
   SPI.begin();
-  this->settings = settings;
 
   //only supports 1 pack at the moment
   bmsModuleManager.setPstrings(settings.parallelStrings);
@@ -62,7 +62,7 @@ void Bms::ms1000Task() {
   }
 }
 
-void Bms::ms500Task(const EEPROMSettings& settings) {
+void Bms::ms500Task() {
     bmsModuleManager.sendCommand(msg, bmscan);
     cellspresent = bmsModuleManager.seriescells();
 
@@ -71,13 +71,13 @@ void Bms::ms500Task(const EEPROMSettings& settings) {
     {
         bmsModuleManager.balanceCells(msg, bmscan, 0);//1 is debug
     }
-    Bms::updateAlarms(settings);
+    Bms::updateAlarms();
     Bms::updateStatus();
 
-    Bms::broadcastStatus(settings);
+    Bms::broadcastStatus();
 
     if (status == Charge) {
-      outlanderCharger.doCharge(settings, bmsModuleManager, msg, bmscan);
+      outlanderCharger.doCharge(msg);
     }
 }
 
@@ -118,7 +118,7 @@ void Bms::updateStatus() {
       } else {
         balanceCells = false;
       }
-      if (outlanderCharger.isDoneCharging(settings, bmsModuleManager)) {
+      if (outlanderCharger.isDoneCharging()) {
         status = Ready;
       }
       break;
@@ -128,6 +128,7 @@ void Bms::updateStatus() {
         status = Ready;
       }
       balanceCells = false;
+      io.isChargeEnabled();
       break;
   }
 }
@@ -169,7 +170,7 @@ void Bms::canRead(int canInterfaceOffset, int idOffset)//idoffset no longer need
   
 }
 
-void Bms::broadcastStatus(const EEPROMSettings& settings) {
+void Bms::broadcastStatus() {
   msg.id  = 0x351;
   msg.len = 8;
 
@@ -184,7 +185,7 @@ void Bms::broadcastStatus(const EEPROMSettings& settings) {
 
   bmscan.write(msg, settings.carCanIndex);
 
-  int soc = shunt.getStateOfCharge(settings);
+  int soc = shunt.getStateOfCharge();
   msg.id  = 0x355;
   msg.len = 8;
   msg.buf[0] = lowByte(soc);
@@ -270,7 +271,7 @@ bool Bms::contactorsClosed() {
   return false;
 }
 
-void Bms::updateAlarms(const EEPROMSettings& settings) {
+void Bms::updateAlarms() {
   Bms::alarm[0] = 0x00;
   if ((settings.overVSetpoint / 1000) < bmsModuleManager.getHighCellVolt())
   {

@@ -20,10 +20,10 @@
 #define HOSTNAME "ESP32-BMS"
 int moduleidstart = 0x1CC;
 
-Bms bms;
-BMSWebServer bmsWebServer;
-
 EEPROMSettings settings;
+BMSWebServer bmsWebServer(settings);
+Bms bms(settings);
+
 Config config;
 
 // Create AsyncWebServer object on port 80
@@ -64,10 +64,10 @@ void setup(){
   ArduinoOTA.setHostname(HOSTNAME);
   ArduinoOTA.begin();
 
-  settings = config.load();
+  config.load(settings);
 
-  bmsWebServer.setup(settings, config, bms);
-  bms.setup(settings);
+  bmsWebServer.setup(config, bms);
+  bms.setup();
 
   ts.addTask(ms500Task);
   ms500Task.enable();
@@ -90,10 +90,11 @@ void ms1000Callback() {
 
 //Execute every half second
 void ms500Callback() {
-  bms.ms500Task(settings);
+  bms.ms500Task();
 }
 
 void ms5000Callback() {
+
   if(!(uint32_t)WiFi.localIP()){
     WiFi.mode(WIFI_AP); //disable station mode
   }

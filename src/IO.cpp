@@ -1,11 +1,16 @@
 #include "IO.h"
 #include "Arduino.h"
 
-void IO::setup(const EEPROMSettings& settings) {
-    this->settings = settings;
+IO::IO(EEPROMSettings& settings): settings { settings } {
+
+}
+
+void IO::setup() {
     chargeOverride = false;
     //digital input for drive (switched live from ignition, that doesnt go live on charge)
-    pinMode(DRIVE_IN, INPUT);
+    pinMode(DIN1, INPUT);
+    pinMode(DIN2, INPUT);
+
 }
 
 void IO::setChargeOverride(bool override) {
@@ -20,6 +25,16 @@ bool IO::isChargeEnabled() {
 
     if(chargeOverride) {
         return true;
+    }
+
+    if (settings.acDetectionMethod == AC_METHOD_D1_HIGH) {
+        //need to invert, low means 12v connected
+        return !digitalRead(DIN1);
+    }
+
+    if (settings.acDetectionMethod == AC_METHOD_D2_HIGH) {
+        //need to invert, low means 12v connected
+        return !digitalRead(DIN2);
     }
     if (settings.acDetectionMethod == AC_METHOD_J1772) {
         //TODO: move to a private method
@@ -48,7 +63,8 @@ bool IO::isChargeEnabled() {
 }
 
 bool IO::isDriveEnabled(bool inverterInForwardReverse) {
+    //DOTO::use configuration method
     //read pin or inverter status in forward/reverse
-    return !digitalRead(DRIVE_IN) || inverterInForwardReverse == true;
+    return !digitalRead(DIN1) || inverterInForwardReverse == true;
 }
 

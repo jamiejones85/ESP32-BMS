@@ -1,6 +1,11 @@
 #include "OutlanderCharger.h"
 
-bool OutlanderCharger::isDoneCharging(EEPROMSettings &settings, BMSModuleManager& bmsModuleManager) {
+OutlanderCharger::OutlanderCharger(EEPROMSettings& settings, BMSModuleManager& bmsModuleManager,  BmsCan &bmscan):
+  settings { settings }, bmsModuleManager { bmsModuleManager }, bmscan { bmscan } {
+
+}
+
+bool OutlanderCharger::isDoneCharging() {
     return chargeAmps == 0;
 }
 void OutlanderCharger::processMessage(BMS_CAN_MESSAGE &inMsg) {
@@ -17,8 +22,8 @@ void OutlanderCharger::processMessage(BMS_CAN_MESSAGE &inMsg) {
     }
 }
 
-void OutlanderCharger::doCharge(const EEPROMSettings &settings, BMSModuleManager& bmsModuleManager, BMS_CAN_MESSAGE &msg, BmsCan &bmscan) {
-    chargeAmps = calculateCurrent(settings, bmsModuleManager);
+void OutlanderCharger::doCharge(BMS_CAN_MESSAGE &msg) {
+    chargeAmps = calculateCurrent();
     if (chargeAmps > 0) {
 
         msg.id = 0x285;
@@ -46,7 +51,7 @@ void OutlanderCharger::doCharge(const EEPROMSettings &settings, BMSModuleManager
     }
 }
 
-int OutlanderCharger::calculateCurrent(const EEPROMSettings &settings, BMSModuleManager& bmsModuleManager) {
+int OutlanderCharger::calculateCurrent() {
 
     int chargecurrent = settings.chargecurrentmax;
     float chargeHyVolts = settings.chargeHys / 1000;

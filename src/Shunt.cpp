@@ -1,7 +1,10 @@
 #include "Shunt.h"
 #include "Arduino.h"
 
-int Shunt::getStateOfCharge(const EEPROMSettings &settings) {
+Shunt::Shunt(EEPROMSettings& s): settings{s} {
+
+}
+int Shunt::getStateOfCharge() {
   return ((settings.useableAh - data.amphours) / (settings.useableAh) ) * 100;
 }
 
@@ -9,7 +12,7 @@ ShuntData Shunt::getData() {
     return data;
 }
 
-void Shunt::resetCounters(BMS_CAN_MESSAGE &msg, BmsCan &bmscan, const EEPROMSettings &settings) {
+void Shunt::resetCounters(BMS_CAN_MESSAGE &msg, BmsCan &bmscan) {
   msg.id  = 0x411;
   msg.len = 8;
   msg.buf[0] = 0x3F;

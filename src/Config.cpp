@@ -1,29 +1,25 @@
 #include "Config.h"
 #include <EEPROM.h>
 
-EEPROMSettings Config::load() {
-  EEPROMSettings settings;
+void Config::load(EEPROMSettings& settings) {
   EEPROM.get(0, settings);
   Serial.print("EEPROM VERSION: ");
   Serial.println(settings.version);
   if (settings.version != EEPROM_VERSION)
   {
     Serial.println("Loading Defaults");
-    settings = loadDefaults();
+    loadDefaults(settings);
   }
-
-  return settings;
 }
 
-void Config::save(const EEPROMSettings& settings) {
+void Config::save(EEPROMSettings& settings) {
   Serial.print("SAVING EEPROM VERSION: ");
   Serial.println(settings.version);
   EEPROM.put(0, settings);
   EEPROM.commit();
 }
 
-EEPROMSettings Config::loadDefaults() {
-    EEPROMSettings settings = EEPROMSettings();
+void Config::loadDefaults(EEPROMSettings& settings) {
     settings.version = EEPROM_VERSION;
     settings.carCanIndex = 1;
     settings.batteryCanIndex = 0;
@@ -51,12 +47,9 @@ EEPROMSettings Config::loadDefaults() {
 
     settings.acDetectionMethod = AC_METHOD_J1772;
     settings.hvPresentMethod = HV_PRESENT_A2_ANALOG;
-
-    return settings;
 }
 
-EEPROMSettings Config::fromJson(JsonObject &doc) {
-    EEPROMSettings settings = EEPROMSettings();
+void Config::fromJson(EEPROMSettings& settings, JsonObject &doc) {
 
     settings.version = doc["version"];
     settings.carCanIndex = doc["carCanIndex"];
@@ -82,12 +75,9 @@ EEPROMSettings Config::fromJson(JsonObject &doc) {
 
     settings.hvPresentMethod = doc["hvPresentMethod"];
     settings.acDetectionMethod = doc["acDetectionMethod"];
-
-
-    return settings;
 }
 
-void Config::toJson(const EEPROMSettings& settings, DynamicJsonDocument &root) {
+void Config::toJson(EEPROMSettings& settings, DynamicJsonDocument &root) {
     root["version"] = settings.version;
     root["carCanIndex"] = settings.carCanIndex;
     root["batteryCanIndex"] = settings.batteryCanIndex;

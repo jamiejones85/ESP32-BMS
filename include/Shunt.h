@@ -3,7 +3,7 @@
 #include "BMSCan.h"
 #include "Config.h"
 
-typedef struct ShuntData {
+struct ShuntData {
     signed long voltage1, voltage2, voltage3;
     double amphours, kilowatthours, kilowatts;
     int32_t milliamps;
@@ -12,12 +12,14 @@ typedef struct ShuntData {
 class Shunt
 {
   public:
-    void resetCounters(BMS_CAN_MESSAGE &msg, BmsCan &bmscan, const EEPROMSettings &settings);
+    Shunt(EEPROMSettings& settings);
+    void resetCounters(BMS_CAN_MESSAGE &msg, BmsCan &bmscan);
     void process(BMS_CAN_MESSAGE &inMsg);
-    int getStateOfCharge(const EEPROMSettings &settings);
+    int getStateOfCharge();
     ShuntData getData();
   private:
     ShuntData data;
+    EEPROMSettings& settings;
 };
 
 #endif

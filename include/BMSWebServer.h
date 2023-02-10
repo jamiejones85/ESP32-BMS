@@ -9,11 +9,12 @@
 class BMSWebServer
 {
   public:
-    void setup(EEPROMSettings &settings, Config &config, Bms &bms);
+    BMSWebServer(EEPROMSettings& settings);
+    void setup(Config &config, Bms &bms);
     void execute();
     void broadcast(const char * message);
     AsyncWebSocket& getWebSocket();
   private:
-
+    EEPROMSettings& settings;
 };
 #endif

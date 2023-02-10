@@ -13,18 +13,20 @@
 // Input 4 (GPIO 35) is a digital pin and is to be used as the alternative chrge in pin, where high is pluged in
 
 #define CHARGE_IN 36
-#define DRIVE_IN 34
+#define DIN1 34
+#define DIN2 35
 
 class IO
 {
   public:
-    void setup(const EEPROMSettings& settings);
+    IO(EEPROMSettings& settings);
+    void setup();
     bool isChargeEnabled();
     bool isDriveEnabled(bool inverterInForwardReverse);
     void setChargeOverride(bool override);
     bool getChargeOverride();
   private:
-    EEPROMSettings settings;
+    EEPROMSettings& settings;
     bool chargeOverride;
 };
 

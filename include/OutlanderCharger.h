@@ -7,9 +7,10 @@
 
 class OutlanderCharger {
   public:
+    OutlanderCharger(EEPROMSettings& settings, BMSModuleManager& bmsModuleManager,  BmsCan &bmscan);
     void processMessage(BMS_CAN_MESSAGE &inMsg);
-    void doCharge(const EEPROMSettings &settings, BMSModuleManager& bmsModuleManager, BMS_CAN_MESSAGE &msg, BmsCan &bmscan);
-    bool isDoneCharging(EEPROMSettings &settings, BMSModuleManager& bmsModuleManager);
+    void doCharge(BMS_CAN_MESSAGE &msg);
+    bool isDoneCharging();
     int reported_voltage = 0;
     int reported_dc_current = 0;
     int reported_temp1 = 0;
@@ -19,8 +20,11 @@ class OutlanderCharger {
     byte evse_duty = 0;
   private:
     int timeout = 0;
-    int calculateCurrent(const EEPROMSettings &settings, BMSModuleManager& bmsModuleManage);
+    int calculateCurrent();
     int chargeAmps = 0;
+    EEPROMSettings& settings;
+    BMSModuleManager& bmsModuleManager;
+    BmsCan &bmscan;
 };
 
 #endif

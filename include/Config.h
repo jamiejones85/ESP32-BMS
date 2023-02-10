@@ -5,12 +5,12 @@
 
 #define AC_METHOD_J1772 0
 #define AC_METHOD_IEC_61851 1
-#define AC_METHOD_D1_High 2
-#define AC_METHOD_D2_LOW 3
+#define AC_METHOD_D1_HIGH 2
+#define AC_METHOD_D2_HIGH 3
 
 #define HV_PRESENT_A2_ANALOG 0
-#define HV_PRESENT_A2_HIG 1
-#define HV_PRESENT_A2_LOW 2
+#define HV_PRESENT_D1_HIGH 1
+#define HV_PRESENT_D2_HIGH 2
 #define AC_METHOD_CAN_BUS 3
 
 #include "ArduinoJson.h"
@@ -59,11 +59,11 @@ typedef struct EEPROMSettings {
 class Config
 {
   public:
-    EEPROMSettings load();
-    void save(const EEPROMSettings& settings);
-    void toJson(const EEPROMSettings& settings, DynamicJsonDocument &root);
-    EEPROMSettings fromJson(JsonObject &doc);
-    EEPROMSettings loadDefaults();
+    void load(EEPROMSettings& settings);
+    void save(EEPROMSettings& settings);
+    void toJson(EEPROMSettings& settings, DynamicJsonDocument &root);
+    void fromJson(EEPROMSettings& settings, JsonObject &doc);
+    void loadDefaults(EEPROMSettings& settings);
 };
 
 #endif

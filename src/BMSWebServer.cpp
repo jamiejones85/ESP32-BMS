@@ -6,6 +6,9 @@ AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 AsyncEventSource events("/events");
 
+BMSWebServer::BMSWebServer(EEPROMSettings& s) : settings{ s } {
+}
+
 AsyncWebSocket& BMSWebServer::getWebSocket() {
     return ws;
 }
@@ -17,7 +20,7 @@ void BMSWebServer::broadcast(const char * message) {
     ws.printfAll(message);
 }
 
-void BMSWebServer::setup(EEPROMSettings &settings, Config &config, Bms &bms)
+void BMSWebServer::setup(Config &config, Bms &bms)
 {
     // ws.onEvent(onWsEvent);
     server.addHandler(&ws);
@@ -75,7 +78,7 @@ void BMSWebServer::setup(EEPROMSettings &settings, Config &config, Bms &bms)
         json["chargeEnabled"] = io.isChargeEnabled();
         json["chargeOverride"] = io.getChargeOverride();
         json["ahUsed"] = data.amphours;
-        json["soc"] = bms.getShunt().getStateOfCharge(settings);
+        json["soc"] = bms.getShunt().getStateOfCharge();
         json["balanceActive"] = bms.getBalanceCells();
         json["test"] = (settings.balanceVoltage / 1000);
         byte status = bms.getStatus();
@@ -129,7 +132,9 @@ void BMSWebServer::setup(EEPROMSettings &settings, Config &config, Bms &bms)
         if (DeserializationError::Ok == deserializeJson(jsonDoc, (const char*)data))
         {
             JsonObject obj = jsonDoc.as<JsonObject>();
-            settings = config.fromJson(obj);
+            config.fromJson(settings, obj);
+            Serial.print("Settings: ");
+            Serial.println(settings.acDetectionMethod);
             config.save(settings);
             request->send(200, "application/json", "success");
 
