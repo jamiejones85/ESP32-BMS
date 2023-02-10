@@ -128,7 +128,6 @@ void Bms::updateStatus() {
         status = Ready;
       }
       balanceCells = false;
-      io.isChargeEnabled();
       break;
   }
 }
